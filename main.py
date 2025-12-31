@@ -282,7 +282,7 @@ class Main(Star):
         try:
             params = {
                 "msg": keyword,
-                "type": "pic"
+                "type": "json"
             }
             
             timeout = aiohttp.ClientTimeout(total=30)
