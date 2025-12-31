@@ -306,7 +306,8 @@ class Main(Star):
                         return CommandResult().error("未获取到图片URL")
                     
                     # 直接返回图片
-                    return CommandResult().image_result(img_url)
+                    from astrbot.api.all import Image as ImageComponent
+                    return CommandResult().message([ImageComponent(img_url)]).use_t2i(False)
                         
         except aiohttp.ClientError as e:
             logger.error(f"网络连接错误：{e}")
