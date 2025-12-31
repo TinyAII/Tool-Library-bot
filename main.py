@@ -12,7 +12,7 @@ from astrbot.api.star import register, Star
 logger = logging.getLogger("astrbot")
 
 
-@register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+360搜图", "1.0.0", "")
+@register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询", "1.0.0", "")
 class Main(Star):
     def __init__(self, context: Context) -> None:
         super().__init__(context)
@@ -267,59 +267,6 @@ class Main(Star):
         except Exception as e:
             logger.error(f"请求路线查询时发生错误：{e}")
             return CommandResult().error(f"请求路线查询时发生错误：{str(e)}")
-
-    @filter.regex(r"^搜图")
-    async def search_images(self, message: AstrMessageEvent):
-        """360搜图，支持异步请求"""
-        msg = message.message_str.replace("搜图", "").strip()
-        
-        if not msg:
-            return CommandResult().message("正确指令：搜图 <关键词>\n\n示例：搜图 奥特曼").use_t2i(False)
-        
-        keyword = msg.strip()
-        api_url = "https://api.cenguigui.cn/api/360/so_images.php"
-        
-        try:
-            params = {
-                "msg": keyword,
-                "type": "json"
-            }
-            
-            timeout = aiohttp.ClientTimeout(total=30)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(api_url, params=params) as resp:
-                    if resp.status != 200:
-                        return CommandResult().message("请求图片搜索失败，服务器返回错误状态码").use_t2i(False)
-                    
-                    result = await resp.json()
-                    
-                    if result.get("code") != "200":
-                        return CommandResult().message(f"搜索失败：{result.get('msg', '未知错误')}").use_t2i(False)
-                    
-                    data = result.get("data", [])
-                    if not data:
-                        return CommandResult().message("未搜索到相关图片").use_t2i(False)
-                    
-                    # 获取第一张图片的URL
-                    img_url = data[0].get("imgurl", "")
-                    if not img_url:
-                        return CommandResult().message("未获取到图片URL").use_t2i(False)
-                    
-                    # 直接返回图片URL
-                    return CommandResult().message(img_url).use_t2i(False)
-                        
-        except aiohttp.ClientError as e:
-            logger.error(f"网络连接错误：{e}")
-            return CommandResult().message("无法连接到图片搜索服务器，请稍后重试或检查网络连接").use_t2i(False)
-        except asyncio.TimeoutError:
-            logger.error("请求超时")
-            return CommandResult().message("请求超时，请稍后重试").use_t2i(False)
-        except json.JSONDecodeError:
-            logger.error("JSON解析错误")
-            return CommandResult().message("服务器返回数据格式错误").use_t2i(False)
-        except Exception as e:
-            logger.error(f"请求图片搜索时发生错误：{e}")
-            return CommandResult().message(f"请求图片搜索时发生错误：{str(e)}").use_t2i(False)
 
     async def terminate(self):
         """插件卸载/重载时调用"""
