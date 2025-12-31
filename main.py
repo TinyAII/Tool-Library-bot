@@ -60,7 +60,7 @@ class Main(Star):
         self.good_morning_cd[user_id] = current_time
 
     @filter.regex(r"^(早安|晚安)")
-    async def good_morning(self, message: AstrMessageEvent):
+    async def good_morning(self, message: AstrMessageEvent, *args, **kwargs):
         """和Bot说早晚安，记录睡眠时间，培养良好作息"""
         umo_id = message.unified_msg_origin
         user_id = message.message_obj.sender.user_id
@@ -149,7 +149,7 @@ class Main(Star):
 
 
     @filter.command("战力查询")
-    async def hero_power(self, message: AstrMessageEvent):
+    async def hero_power(self, message: AstrMessageEvent, *args, **kwargs):
         """王者英雄战力查询，支持双区双系统"""
         msg = message.message_str.replace("战力查询", "").strip()
         
@@ -204,7 +204,7 @@ class Main(Star):
             return CommandResult().error(f"请求战力查询时发生错误：{str(e)}")
 
     @filter.command("路线查询")
-    async def city_route(self, message: AstrMessageEvent):
+    async def city_route(self, message: AstrMessageEvent, *args, **kwargs):
         """城际路线查询，支持异步请求"""
         msg = message.message_str.replace("路线查询", "").strip()
         
@@ -269,7 +269,7 @@ class Main(Star):
             return CommandResult().error(f"请求路线查询时发生错误：{str(e)}")
 
     @filter.command("搜图")
-    async def search_images(self, message: AstrMessageEvent):
+    async def search_images(self, message: AstrMessageEvent, *args, **kwargs):
         """360搜图，支持异步请求"""
         msg = message.message_str.replace("搜图", "").strip()
         
