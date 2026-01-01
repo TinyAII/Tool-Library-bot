@@ -326,7 +326,9 @@ class Main(Star):
                         yield CommandResult().error(f"AI绘画生成失败：{image_url}").use_t2i(False)
                         return
                     
-                    yield CommandResult().image_result(image_url).use_t2i(False)
+                    # 使用正确的方式发送图片
+                    from astrbot.api.message_components import Image
+                    yield CommandResult().chain_result([Image.fromURL(image_url)]).use_t2i(False)
                     return
                         
         except aiohttp.ClientError as e:
