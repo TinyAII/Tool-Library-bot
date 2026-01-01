@@ -12,7 +12,7 @@ from astrbot.api.star import register, Star
 logger = logging.getLogger("astrbot")
 
 
-@register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询", "1.0.0", "")
+@register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+AI绘画", "1.0.0", "")
 class Main(Star):
     def __init__(self, context: Context) -> None:
         super().__init__(context)
@@ -267,6 +267,53 @@ class Main(Star):
         except Exception as e:
             logger.error(f"请求路线查询时发生错误：{e}")
             return CommandResult().error(f"请求路线查询时发生错误：{str(e)}")
+
+    @filter.command("ai绘画")
+    async def ai_painting(self, message: AstrMessageEvent):
+        """AI绘画功能，根据提示词生成图片"""
+        msg = message.message_str.replace("ai绘画", "").strip()
+        
+        if not msg:
+            return CommandResult().error("正确指令：ai绘画 <提示词>\n\n示例：ai绘画 一条狗")
+        
+        prompt = msg.strip()
+        api_url = "https://api.jkyai.top/API/ks/api.php"
+        
+        try:
+            # 先回复用户正在生成图片
+            yield CommandResult().message("正在制作精美图片..........").use_t2i(False)
+            
+            # 构造请求参数，使用默认的1024x1024大小，guidance设为最高10，batch为1
+            params = {
+                "msg": prompt,
+                "size": "1024x1024",
+                "guidance": 10,
+                "batch": 1
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(api_url, params=params) as resp:
+                    if resp.status != 200:
+                        return CommandResult().error("请求AI绘画失败，服务器返回错误状态码")
+                    
+                    image_url = await resp.text()
+                    
+                    # 检查返回的是否为有效的URL
+                    if not image_url.startswith("http"):
+                        return CommandResult().error(f"AI绘画生成失败：{image_url}")
+                    
+                    return CommandResult().image_result(image_url).use_t2i(False)
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            return CommandResult().error("无法连接到AI绘画服务器，请稍后重试或检查网络连接")
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            return CommandResult().error("请求超时，请稍后重试")
+        except Exception as e:
+            logger.error(f"请求AI绘画时发生错误：{e}")
+            return CommandResult().error(f"请求AI绘画时发生错误：{str(e)}")
 
     async def terminate(self):
         """插件卸载/重载时调用"""
