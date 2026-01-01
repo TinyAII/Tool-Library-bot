@@ -280,15 +280,15 @@ class Main(Star):
             yield message.error_result(f"请求路线查询时发生错误：{str(e)}").use_t2i(False)
             return
 
-    @filter.command("ai绘画")
-    @filter.command("AI绘画")
+    @filter.regex(r"^[Aa][Ii]绘画")
     async def ai_painting(self, message: AstrMessageEvent):
         """AI绘画功能，根据提示词生成图片"""
-        # 提取提示词，处理两种命令格式
-        msg = message.message_str.replace("ai绘画", "").replace("AI绘画", "").strip()
+        # 提取提示词，支持大小写AI
+        import re
+        msg = re.sub(r"^[Aa][Ii]绘画", "", message.message_str).strip()
         
         if not msg:
-            yield message.error_result("正确指令：AI绘画/ai绘画 <提示词>\n\n示例：AI绘画 一条狗").use_t2i(False)
+            yield message.error_result("正确指令：AI绘画 <提示词>\n\n示例：AI绘画 一条狗").use_t2i(False)
             return
         
         prompt = msg.strip()
