@@ -42,9 +42,7 @@ class Main(Star):
         self.playlist_page = config.get("playlist_page", 1)  # 歌单页数（默认第一页）
         self.show_song_count = config.get("show_song_count", 10)  # 展示歌曲数量
         
-        # 音乐搜索API配置
-        self.music_search_api = config.get("music_search_api", "https://www.example.com/api/music/search")  # 音乐聚合搜索API
-        self.music_id_api = config.get("music_id_api", "https://www.example.com/api/music/id")  # 获取音乐ID API
+
         
         # 会话缓存，用于存储搜索结果
         self.music_search_cache = {}
@@ -444,22 +442,36 @@ class Main(Star):
                 del self.music_search_cache[session_id]
     
     async def _search_music(self, keyword: str) -> list:
-        """搜索音乐"""
+        """搜索音乐，使用网易云音乐API"""
         try:
-            # 调用音乐聚合搜索API
+            # 使用网易云音乐API搜索歌曲
+            api_url = "https://music.163.com/api/search/get"
             async with aiohttp.ClientSession() as session:
                 params = {
-                    "keyword": keyword,
-                    "platform": self.music_platform,
-                    "page": self.playlist_page,
+                    "s": keyword,
+                    "type": 1,  # 1表示单曲
+                    "offset": (self.playlist_page - 1) * self.show_song_count,
                     "limit": self.show_song_count
                 }
-                async with session.get(self.music_search_api, params=params) as resp:
+                async with session.get(api_url, params=params, headers={"Referer": "https://music.163.com/"}) as resp:
                     if resp.status != 200:
                         logger.error(f"音乐搜索失败，状态码：{resp.status}")
                         return []
                     result = await resp.json()
-                    return result.get("songs", [])[:self.show_song_count]
+                    
+                    songs = []
+                    if result.get("code") == 200:
+                        for item in result.get("result", {}).get("songs", []):
+                            song = {
+                                "id": item.get("id"),
+                                "name": item.get("name"),
+                                "artist": ", ".join([artist.get("name") for artist in item.get("artists", [])]),
+                                "album": item.get("album", {}).get("name"),
+                                "audio_url": f"https://music.163.com/song/media/outer/url?id={item.get('id')}.mp3"
+                            }
+                            songs.append(song)
+                    
+                    return songs[:self.show_song_count]
         except Exception as e:
             logger.error(f"音乐搜索失败：{e}")
             return []
@@ -549,22 +561,8 @@ class Main(Star):
             await message.send(CommandResult().error(f"播放歌曲失败：{str(e)}").use_t2i(False))
     
     async def _get_music_id(self, song_id: str) -> str:
-        """获取音乐平台的歌曲ID"""
-        try:
-            async with aiohttp.ClientSession() as session:
-                params = {
-                    "song_id": song_id,
-                    "platform": self.music_platform
-                }
-                async with session.get(self.music_id_api, params=params) as resp:
-                    if resp.status != 200:
-                        logger.error(f"获取音乐ID失败，状态码：{resp.status}")
-                        return song_id
-                    result = await resp.json()
-                    return result.get("music_id", song_id)
-        except Exception as e:
-            logger.error(f"获取音乐ID失败：{e}")
-            return song_id
+        """获取音乐平台的歌曲ID，直接返回网易云音乐ID"""
+        return song_id
     
     async def _send_text_song(self, message: AstrMessageEvent, song: dict):
         """发送文字形式的歌曲信息"""

@@ -54,16 +54,5 @@
         "type": "int",
         "default": 10
     },
-    "music_search_api": {
-        "description": "音乐聚合搜索API",
-        "hint": "音乐搜索API的地址",
-        "type": "string",
-        "default": "https://www.example.com/api/music/search"
-    },
-    "music_id_api": {
-        "description": "获取音乐ID API",
-        "hint": "获取音乐平台歌曲ID的API地址",
-        "type": "string",
-        "default": "https://www.example.com/api/music/id"
-    }
+
 }
