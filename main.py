@@ -369,9 +369,8 @@ class Main(Star):
                         with open(file_path, "wb") as f:
                             f.write(await img_resp.read())
                     
-                    # 使用本地文件路径发送图片
-                    image_component = Image.fromFileSystem(file_path)
-                    yield CommandResult().chain_result([image_component]).use_t2i(False)
+                    # 直接返回本地图片路径，让系统自动处理
+                    yield CommandResult().message(file_path).use_t2i(False)
                     return
                         
         except aiohttp.ClientError as e:
