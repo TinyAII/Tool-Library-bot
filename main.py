@@ -8,6 +8,7 @@ import urllib.parse
 from astrbot.api.all import AstrMessageEvent, CommandResult, Context, Plain
 import astrbot.api.event.filter as filter
 from astrbot.api.star import register, Star
+from astrbot.core.config.astrbot_config import AstrBotConfig
 from astrbot.core.utils.session_waiter import session_waiter, SessionController
 from astrbot.core.message.components import Record
 from astrbot.core.message.message_event_result import MessageChain
@@ -17,7 +18,7 @@ logger = logging.getLogger("astrbot")
 
 @register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+AI绘画+点歌功能", "1.0.0", "")
 class Main(Star):
-    def __init__(self, context: Context) -> None:
+    def __init__(self, context: Context, config: "AstrBotConfig") -> None:
         super().__init__(context)
         self.PLUGIN_NAME = "astrbot_plugin_essential"
         PLUGIN_NAME = self.PLUGIN_NAME
@@ -32,18 +33,18 @@ class Main(Star):
         self.daily_sleep_cache = {}
         self.good_morning_cd = {}
         
-        # 点歌功能配置
-        self.music_platform = "网易"  # 网易，QQ，酷我
-        self.search_display_mode = "文字"  # 文字，图片
-        self.send_song_mode = "卡片"  # 卡片，语音
-        self.enable_lyrics = False  # 是否启用歌词
-        self.timeout = 30  # 点歌操作的超时时长（秒）
-        self.playlist_page = 1  # 歌单页数（默认第一页）
-        self.show_song_count = 10  # 展示歌曲数量
+        # 点歌功能配置，从配置文件读取
+        self.music_platform = config.get("music_platform", "网易")  # 网易，QQ，酷我
+        self.search_display_mode = config.get("search_display_mode", "文字")  # 文字，图片
+        self.send_song_mode = config.get("send_song_mode", "卡片")  # 卡片，语音
+        self.enable_lyrics = config.get("enable_lyrics", False)  # 是否启用歌词
+        self.timeout = config.get("timeout", 30)  # 点歌操作的超时时长（秒）
+        self.playlist_page = config.get("playlist_page", 1)  # 歌单页数（默认第一页）
+        self.show_song_count = config.get("show_song_count", 10)  # 展示歌曲数量
         
         # 音乐搜索API配置
-        self.music_search_api = "https://www.example.com/api/music/search"  # 音乐聚合搜索API
-        self.music_id_api = "https://www.example.com/api/music/id"  # 获取音乐ID API
+        self.music_search_api = config.get("music_search_api", "https://www.example.com/api/music/search")  # 音乐聚合搜索API
+        self.music_id_api = config.get("music_id_api", "https://www.example.com/api/music/id")  # 获取音乐ID API
         
         # 会话缓存，用于存储搜索结果
         self.music_search_cache = {}
