@@ -147,7 +147,7 @@ class Main(Star):
         msg = message.message_str.replace("战力查询", "").strip()
         
         if not msg:
-            yield message.error_result("正确指令：战力查询 <英雄名>\n\n示例：战力查询 小乔").use_t2i(False)
+            yield message.error_result("正确示例：\n\n战力查询 小乔").use_t2i(False)
             return
         
         hero_name = msg.strip()
@@ -181,9 +181,9 @@ class Main(Star):
                     # 格式化输出结果
                     response = f"{data.get('name', hero_name)}\n"
                     response += f"国服最低：{data.get('guobiao', '0')}\n"
-                    response += f"省标最低：{data.get('provincePower', '0')}\n"
-                    response += f"市标最低：{data.get('cityPower', '0')}\n"
-                    response += f"区标最低：{data.get('areaPower', '0')}"
+                    response += f"【{data.get('province', '未知省')}】省标最低：{data.get('provincePower', '0')}\n"
+                    response += f"【{data.get('city', '未知市')}】市标最低：{data.get('cityPower', '0')}\n"
+                    response += f"【{data.get('area', '未知区')}】区标最低：{data.get('areaPower', '0')}"
                     
                     yield message.plain_result(response).use_t2i(False)
                     return
