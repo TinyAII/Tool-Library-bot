@@ -345,9 +345,34 @@ class Main(Star):
                         yield CommandResult().error(f"AI绘画生成失败：{image_url}").use_t2i(False)
                         return
                     
-                    # 直接返回图片URL，使用message方法让系统自动处理
+                    # 下载图片到本地并发送
+                    import uuid
+                    import os
+                    from astrbot.api.message_components import Image
                     from astrbot.api.all import CommandResult
-                    yield CommandResult().message(image_url).use_t2i(False)
+                    
+                    # 创建存储目录
+                    save_dir = f"data/{self.PLUGIN_NAME}_images"
+                    if not os.path.exists(save_dir):
+                        os.makedirs(save_dir)
+                    
+                    # 生成唯一文件名
+                    file_name = f"{uuid.uuid4().hex}.jpg"
+                    file_path = os.path.join(save_dir, file_name)
+                    
+                    # 下载图片
+                    async with session.get(image_url, timeout=30) as img_resp:
+                        if img_resp.status != 200:
+                            yield CommandResult().error("下载图片失败，服务器返回错误状态码").use_t2i(False)
+                            return
+                        
+                        with open(file_path, "wb") as f:
+                            f.write(await img_resp.read())
+                    
+                    # 使用本地文件路径发送图片
+                    from astrbot.api import StarTools
+                    image_component = Image.fromFileSystem(file_path)
+                    yield CommandResult().chain_result([image_component]).use_t2i(False)
                     return
                         
         except aiohttp.ClientError as e:
