@@ -302,12 +302,11 @@ class Main(Star):
             yield CommandResult().error(f"请求路线查询时发生错误：{str(e)}").use_t2i(False)
             return
 
-    @filter.regex(r"^绘画")
+    @filter.command("绘画")
     async def ai_painting(self, message: AstrMessageEvent):
         """AI绘画功能，根据提示词生成图片"""
-        # 提取提示词
-        import re
-        msg = re.sub(r"^绘画", "", message.message_str).strip()
+        # 提取提示词，命令匹配会自动处理命令前缀
+        msg = message.message_str.replace("绘画", "").strip()
         
         if not msg:
             from astrbot.api.all import CommandResult
