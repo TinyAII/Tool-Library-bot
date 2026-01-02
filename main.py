@@ -15,11 +15,11 @@ from astrbot.core.message.message_event_result import MessageChain
 logger = logging.getLogger("astrbot")
 
 
-@register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+AI绘画+点歌功能", "1.0.0", "")
+@register("tool_library_bot", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+AI绘画+点歌功能", "1.0.0", "")
 class Main(Star):
-    def __init__(self, context: Context, config: dict = None) -> None:
+    def __init__(self, context: Context, config):
         super().__init__(context)
-        self.PLUGIN_NAME = "astrbot_plugin_essential"
+        self.PLUGIN_NAME = "tool_library_bot"
         PLUGIN_NAME = self.PLUGIN_NAME
 
         if not os.path.exists(f"data/{PLUGIN_NAME}_data.json"):
@@ -32,17 +32,14 @@ class Main(Star):
         self.daily_sleep_cache = {}
         self.good_morning_cd = {}
         
-        # 初始化配置
-        self.config = config or {}
-        
         # 点歌功能配置
-        self.music_platform = self.config.get("music_platform", "网易")  # 网易，QQ，酷我
-        self.search_display_mode = self.config.get("search_display_mode", "文字")  # 文字，图片
-        self.send_song_mode = self.config.get("send_song_mode", "卡片")  # 卡片，语音，文本
-        self.enable_lyrics = self.config.get("enable_lyrics", False)  # 是否启用歌词
-        self.timeout = self.config.get("timeout", 30)  # 点歌操作的超时时长（秒）
+        self.music_platform = config.get("music_platform", "网易")  # 网易，QQ，酷我
+        self.search_display_mode = config.get("search_display_mode", "文字")  # 文字，图片
+        self.send_song_mode = config.get("send_song_mode", "卡片")  # 卡片，语音，文本
+        self.enable_lyrics = config.get("enable_lyrics", False)  # 是否启用歌词
+        self.timeout = config.get("timeout", 30)  # 点歌操作的超时时长（秒）
         self.playlist_page = 1  # 歌单页数（默认第一页）
-        self.show_song_count = self.config.get("show_song_count", 10)  # 展示歌曲数量
+        self.show_song_count = config.get("show_song_count", 10)  # 展示歌曲数量
         
         # 会话缓存，用于存储搜索结果
         self.music_search_cache = {}
