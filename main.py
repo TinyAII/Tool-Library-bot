@@ -370,7 +370,6 @@ class Main(Star):
                             f.write(await img_resp.read())
                     
                     # 使用本地文件路径发送图片
-                    from astrbot.api import StarTools
                     image_component = Image.fromFileSystem(file_path)
                     yield CommandResult().chain_result([image_component]).use_t2i(False)
                     return
