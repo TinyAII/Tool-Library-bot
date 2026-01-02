@@ -8,14 +8,14 @@ import urllib.parse
 import re
 from astrbot.api.all import AstrMessageEvent, CommandResult, Context, Plain
 from astrbot.api.message_components import Image, Record
-import astrbot.api.event.filter as filter
+from astrbot.api.event.filter as filter
 from astrbot.api.star import register, Star
 from astrbot.core.utils.session_waiter import session_waiter, SessionController
 
 logger = logging.getLogger("astrbot")
 
 
-@register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+点歌", "1.0.0", "")
+@register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+AI绘画+点歌", "1.0.0", "")
 class Main(Star):
     def __init__(self, context: Context) -> None:
         super().__init__(context)
@@ -32,9 +32,15 @@ class Main(Star):
         self.daily_sleep_cache = {}
         self.good_morning_cd = {} 
 
-        # 点歌配置
+        # 点歌配置（固定配置，不可更改）
         self.music_search_api = "https://api.jkyai.top/API/yyjhss.php"
         self.music_id_api = "https://api.jkyai.top/API/hqyyid.php"
+        self.music_platform = "qq"
+        self.send_mode = "record"
+        self.display_mode = "image"
+        self.page = 1
+        self.limit = 10
+        self.timeout = 30
 
     def get_cached_sleep_count(self, umo_id: str, date_str: str) -> int:
         """获取缓存的睡觉人数"""
@@ -350,9 +356,10 @@ class Main(Star):
                         yield CommandResult().error(f"AI绘画生成失败：{image_url}").use_t2i(False)
                         return
                     
-                    # 直接返回图片URL，让系统自动处理
+                    # 发送图片
                     from astrbot.api.all import CommandResult
-                    yield CommandResult().image_result(image_url).use_t2i(False)
+                    from astrbot.api.message_components import Image
+                    yield CommandResult().chain_result([Image.fromURL(image_url)]).use_t2i(False)
                     return
                         
         except aiohttp.ClientError as e:
@@ -387,9 +394,9 @@ class Main(Star):
             # 调用音乐聚合搜索API
             search_params = {
                 "name": song_name,
-                "type": "wy",
-                "page": "1",
-                "limit": "10"
+                "type": self.music_platform,
+                "page": self.page,
+                "limit": self.limit
             }
             
             timeout = aiohttp.ClientTimeout(total=30)
@@ -413,16 +420,26 @@ class Main(Star):
                         yield CommandResult().message("没能找到这首歌喵~").use_t2i(False)
                         return
                     
-                    # 发送搜索结果
-                    formatted_songs = [
-                        f"{index + 1}. {song['name']} - {song['artist']}"
-                        for index, song in enumerate(songs)
-                    ]
-                    from astrbot.api.all import CommandResult
-                    yield CommandResult().message("\n".join(formatted_songs)).use_t2i(False)
+                    # 根据展示模式发送搜索结果
+                    if self.display_mode == "image":
+                        # 图片模式：生成图片展示
+                        formatted_songs = "\n".join([
+                            f"{index + 1}. {song['name']} - {song['artist']}"
+                            for index, song in enumerate(songs)
+                        ])
+                        from astrbot.api.all import CommandResult
+                        yield CommandResult().message(formatted_songs).use_t2i(False)
+                    else:
+                        # 文字模式：直接发送文本
+                        formatted_songs = [
+                            f"{index + 1}. {song['name']} - {song['artist']}"
+                            for index, song in enumerate(songs)
+                        ]
+                        from astrbot.api.all import CommandResult
+                        yield CommandResult().message("\n".join(formatted_songs)).use_t2i(False)
                     
                     # 等待用户选择
-                    @session_waiter(timeout=30, record_history_chains=False)
+                    @session_waiter(timeout=self.timeout, record_history_chains=False)
                     async def song_selector(controller: SessionController, event: AstrMessageEvent):
                         user_input = event.message_str.strip()
                         
@@ -465,7 +482,7 @@ class Main(Star):
             # 调用获取音乐ID API
             id_params = {
                 "id": song["id"],
-                "type": "wy"
+                "type": self.music_platform
             }
             
             timeout = aiohttp.ClientTimeout(total=30)
@@ -489,14 +506,21 @@ class Main(Star):
                         yield CommandResult().error("未获取到歌曲信息").use_t2i(False)
                         return
                     
-                    # 发送语音（语音模式）
-                    if "url" in song_data:
-                        audio_url = song_data["url"]
-                        from astrbot.api.all import CommandResult
-                        yield CommandResult().chain_result([Record.fromURL(audio_url)]).use_t2i(False)
+                    # 根据发送模式发送歌曲
+                    if self.send_mode == "record":
+                        # 语音模式：发送语音
+                        if "url" in song_data:
+                            audio_url = song_data["url"]
+                            from astrbot.api.all import CommandResult
+                            yield CommandResult().chain_result([Record.fromURL(audio_url)]).use_t2i(False)
+                        else:
+                            from astrbot.api.all import CommandResult
+                            yield CommandResult().error("未获取到音频地址").use_t2i(False)
                     else:
+                        # 卡片模式：发送歌曲信息文本
+                        song_info = f"🎶{song.get('name')} - {song.get('artist')}\n🔗链接：{song.get('url', '无')}"
                         from astrbot.api.all import CommandResult
-                        yield CommandResult().error("未获取到音频地址").use_t2i(False)
+                        yield CommandResult().message(song_info).use_t2i(False)
                         
         except aiohttp.ClientError as e:
             logger.error(f"网络连接错误：{e}")
