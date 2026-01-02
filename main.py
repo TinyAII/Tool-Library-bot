@@ -5,14 +5,17 @@ import datetime
 import logging
 import aiohttp
 import urllib.parse
+import re
 from astrbot.api.all import AstrMessageEvent, CommandResult, Context, Plain
+from astrbot.api.message_components import Image, Record
 import astrbot.api.event.filter as filter
 from astrbot.api.star import register, Star
+from astrbot.core.utils.session_waiter import session_waiter, SessionController
 
 logger = logging.getLogger("astrbot")
 
 
-@register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+AI绘画", "1.0.0", "")
+@register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+点歌", "1.0.0", "")
 class Main(Star):
     def __init__(self, context: Context) -> None:
         super().__init__(context)
@@ -28,6 +31,10 @@ class Main(Star):
 
         self.daily_sleep_cache = {}
         self.good_morning_cd = {} 
+
+        # 点歌配置
+        self.music_search_api = "https://api.jkyai.top/API/yyjhss.php"
+        self.music_id_api = "https://api.jkyai.top/API/hqyyid.php"
 
     def get_cached_sleep_count(self, umo_id: str, date_str: str) -> int:
         """获取缓存的睡觉人数"""
@@ -141,8 +148,6 @@ class Main(Star):
             yield CommandResult().message(
                 f"快睡觉喵，{user_name}！\n现在是 {curr_human}，你是本群今天第 {curr_day_sleeping} 个睡觉的。"
             ).use_t2i(False)
-
-
 
     @filter.command("战力查询")
     async def hero_power(self, message: AstrMessageEvent):
@@ -306,7 +311,6 @@ class Main(Star):
     async def ai_painting(self, message: AstrMessageEvent):
         """AI绘画功能，根据提示词生成图片"""
         # 提取提示词，支持大小写AI
-        import re
         msg = re.sub(r"^[Aa][Ii]绘画", "", message.message_str).strip()
         
         if not msg:
@@ -365,6 +369,149 @@ class Main(Star):
             logger.error(f"请求AI绘画时发生错误：{e}")
             from astrbot.api.all import CommandResult
             yield CommandResult().error(f"请求AI绘画时发生错误：{str(e)}").use_t2i(False)
+            return
+
+    @filter.command("点歌")
+    async def search_song(self, message: AstrMessageEvent):
+        """搜索歌曲供用户选择"""
+        msg = message.message_str.replace("点歌", "").strip()
+        
+        if not msg:
+            from astrbot.api.all import CommandResult
+            yield CommandResult().message("未输入歌名哦，示例：\n\n点歌 泡沫").use_t2i(False)
+            return
+        
+        song_name = msg.strip()
+        
+        try:
+            # 调用音乐聚合搜索API
+            search_params = {
+                "name": song_name,
+                "type": "wy",
+                "page": "1",
+                "limit": "10"
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(self.music_search_api, params=search_params) as resp:
+                    if resp.status != 200:
+                        from astrbot.api.all import CommandResult
+                        yield CommandResult().error("搜索歌曲失败，请稍后重试").use_t2i(False)
+                        return
+                    
+                    result = await resp.json()
+                    
+                    if result.get("code") != 1:
+                        from astrbot.api.all import CommandResult
+                        yield CommandResult().error(f"搜索失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                        return
+                    
+                    songs = result.get("data", [])
+                    if not songs:
+                        from astrbot.api.all import CommandResult
+                        yield CommandResult().message("没能找到这首歌喵~").use_t2i(False)
+                        return
+                    
+                    # 发送搜索结果
+                    formatted_songs = [
+                        f"{index + 1}. {song['name']} - {song['artist']}"
+                        for index, song in enumerate(songs)
+                    ]
+                    from astrbot.api.all import CommandResult
+                    yield CommandResult().message("\n".join(formatted_songs)).use_t2i(False)
+                    
+                    # 等待用户选择
+                    @session_waiter(timeout=30, record_history_chains=False)
+                    async def song_selector(controller: SessionController, event: AstrMessageEvent):
+                        user_input = event.message_str.strip()
+                        
+                        if not user_input.isdigit():
+                            return
+                        
+                        song_index = int(user_input) - 1
+                        if 0 <= song_index < len(songs):
+                            selected_song = songs[song_index]
+                            await self.send_song(message, selected_song)
+                            controller.stop()
+                    
+                    try:
+                        await song_selector(message)
+                    except TimeoutError:
+                        from astrbot.api.all import CommandResult
+                        yield CommandResult().message("已超时，请重新点歌").use_t2i(False)
+                    except Exception as e:
+                        logger.error(f"点歌选择时发生错误：{e}")
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            from astrbot.api.all import CommandResult
+            yield CommandResult().error("无法连接到音乐服务器，请稍后重试或检查网络连接").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            from astrbot.api.all import CommandResult
+            yield CommandResult().error("请求超时，请稍后重试").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"点歌时发生错误：{e}")
+            from astrbot.api.all import CommandResult
+            yield CommandResult().error(f"点歌时发生错误：{str(e)}").use_t2i(False)
+            return
+
+    async def send_song(self, message: AstrMessageEvent, song: dict):
+        """发送歌曲，支持卡片和语音模式"""
+        try:
+            # 调用获取音乐ID API
+            id_params = {
+                "id": song["id"],
+                "type": "wy"
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(self.music_id_api, params=id_params) as resp:
+                    if resp.status != 200:
+                        from astrbot.api.all import CommandResult
+                        yield CommandResult().error("获取歌曲信息失败，请稍后重试").use_t2i(False)
+                        return
+                    
+                    result = await resp.json()
+                    
+                    if result.get("code") != 1:
+                        from astrbot.api.all import CommandResult
+                        yield CommandResult().error(f"获取歌曲信息失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                        return
+                    
+                    song_data = result.get("data", {})
+                    if not song_data:
+                        from astrbot.api.all import CommandResult
+                        yield CommandResult().error("未获取到歌曲信息").use_t2i(False)
+                        return
+                    
+                    # 发送语音（语音模式）
+                    if "url" in song_data:
+                        audio_url = song_data["url"]
+                        from astrbot.api.all import CommandResult
+                        yield CommandResult().chain_result([Record.fromURL(audio_url)]).use_t2i(False)
+                    else:
+                        from astrbot.api.all import CommandResult
+                        yield CommandResult().error("未获取到音频地址").use_t2i(False)
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            from astrbot.api.all import CommandResult
+            yield CommandResult().error("无法连接到音乐服务器，请稍后重试或检查网络连接").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            from astrbot.api.all import CommandResult
+            yield CommandResult().error("请求超时，请稍后重试").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"发送歌曲时发生错误：{e}")
+            from astrbot.api.all import CommandResult
+            yield CommandResult().error(f"发送歌曲时发生错误：{str(e)}").use_t2i(False)
             return
 
     async def terminate(self):
