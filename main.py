@@ -16,11 +16,11 @@ from astrbot.core.message.message_event_result import MessageChain
 logger = logging.getLogger("astrbot")
 
 
-@register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+AI绘画+点歌功能", "1.0.0", "")
+@register("astrbot_plugin_tool_library", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+AI绘画+点歌功能", "1.0.0", "https://github.com/TinyAII/Tool-Library-bot.git")
 class Main(Star):
     def __init__(self, context: Context, config: "AstrBotConfig") -> None:
         super().__init__(context)
-        self.PLUGIN_NAME = "astrbot_plugin_essential"
+        self.PLUGIN_NAME = "astrbot_plugin_tool_library"
         PLUGIN_NAME = self.PLUGIN_NAME
 
         if not os.path.exists(f"data/{PLUGIN_NAME}_data.json"):
