@@ -8,7 +8,6 @@ import urllib.parse
 from astrbot.api.all import AstrMessageEvent, CommandResult, Context, Plain
 import astrbot.api.event.filter as filter
 from astrbot.api.star import register, Star
-from astrbot.core.config.astrbot_config import AstrBotConfig
 from astrbot.core.utils.session_waiter import session_waiter, SessionController
 from astrbot.core.message.components import Record
 from astrbot.core.message.message_event_result import MessageChain
@@ -16,11 +15,11 @@ from astrbot.core.message.message_event_result import MessageChain
 logger = logging.getLogger("astrbot")
 
 
-@register("astrbot_plugin_tool_library", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+AI绘画+点歌功能", "1.0.0", "https://github.com/TinyAII/Tool-Library-bot.git")
+@register("D-G-N-C-J", "Tinyxi", "早晚安记录+王者战力查询+城际路线查询+AI绘画+点歌功能", "1.0.0", "")
 class Main(Star):
-    def __init__(self, context: Context, config: "AstrBotConfig") -> None:
+    def __init__(self, context: Context, config: dict = None) -> None:
         super().__init__(context)
-        self.PLUGIN_NAME = "astrbot_plugin_tool_library"
+        self.PLUGIN_NAME = "astrbot_plugin_essential"
         PLUGIN_NAME = self.PLUGIN_NAME
 
         if not os.path.exists(f"data/{PLUGIN_NAME}_data.json"):
@@ -33,19 +32,23 @@ class Main(Star):
         self.daily_sleep_cache = {}
         self.good_morning_cd = {}
         
-        # 点歌功能配置，从配置文件读取
-        self.music_platform = config.get("music_platform", "网易")  # 网易，QQ，酷我
-        self.search_display_mode = config.get("search_display_mode", "文字")  # 文字，图片
-        self.send_song_mode = config.get("send_song_mode", "卡片")  # 卡片，语音
-        self.enable_lyrics = config.get("enable_lyrics", False)  # 是否启用歌词
-        self.timeout = config.get("timeout", 30)  # 点歌操作的超时时长（秒）
-        self.playlist_page = config.get("playlist_page", 1)  # 歌单页数（默认第一页）
-        self.show_song_count = config.get("show_song_count", 10)  # 展示歌曲数量
+        # 初始化配置
+        self.config = config or {}
         
-
+        # 点歌功能配置
+        self.music_platform = self.config.get("music_platform", "网易")  # 网易，QQ，酷我
+        self.search_display_mode = self.config.get("search_display_mode", "文字")  # 文字，图片
+        self.send_song_mode = self.config.get("send_song_mode", "卡片")  # 卡片，语音，文本
+        self.enable_lyrics = self.config.get("enable_lyrics", False)  # 是否启用歌词
+        self.timeout = self.config.get("timeout", 30)  # 点歌操作的超时时长（秒）
+        self.playlist_page = 1  # 歌单页数（默认第一页）
+        self.show_song_count = self.config.get("show_song_count", 10)  # 展示歌曲数量
         
         # 会话缓存，用于存储搜索结果
         self.music_search_cache = {}
+        
+        # 音乐搜索API配置 - 使用实际可用的API，不需要用户配置
+        self.music_api = "https://music-api.txqq.pro/"  # 音乐聚合搜索API
 
     def get_cached_sleep_count(self, umo_id: str, date_str: str) -> int:
         """获取缓存的睡觉人数"""
@@ -407,7 +410,11 @@ class Main(Star):
             return
         
         # 展示搜索结果
-        await self._show_search_result(message, songs)
+        search_result = self._show_search_result(message, songs)
+        
+        # 发送搜索结果
+        from astrbot.api.all import CommandResult
+        yield CommandResult().message(search_result).use_t2i(False)
         
         # 缓存搜索结果
         session_id = message.unified_msg_origin
@@ -442,68 +449,64 @@ class Main(Star):
                 del self.music_search_cache[session_id]
     
     async def _search_music(self, keyword: str) -> list:
-        """搜索音乐，使用网易云音乐API"""
+        """搜索音乐"""
         try:
-            # 使用网易云音乐API搜索歌曲
-            api_url = "https://music.163.com/api/search/get"
+            # 将中文平台名转换为API可用的英文标识
+            platform_map = {
+                "网易": "netease",
+                "QQ": "qq",
+                "酷我": "kuwo"
+            }
+            api_platform = platform_map.get(self.music_platform, "netease")
+            
+            # 调用音乐聚合搜索API
             async with aiohttp.ClientSession() as session:
+                api_url = f"{self.music_api}search"
                 params = {
-                    "s": keyword,
-                    "type": 1,  # 1表示单曲
-                    "offset": (self.playlist_page - 1) * self.show_song_count,
+                    "keyword": keyword,
+                    "type": api_platform,
                     "limit": self.show_song_count
                 }
-                async with session.get(api_url, params=params, headers={"Referer": "https://music.163.com/"}) as resp:
+                async with session.get(api_url, params=params) as resp:
                     if resp.status != 200:
                         logger.error(f"音乐搜索失败，状态码：{resp.status}")
                         return []
                     result = await resp.json()
                     
+                    # 处理不同API返回格式，确保返回统一的歌曲列表格式
                     songs = []
                     if result.get("code") == 200:
-                        for item in result.get("result", {}).get("songs", []):
-                            song = {
+                        data = result.get("data", {})
+                        search_results = data.get("songs", [])
+                        
+                        for item in search_results:
+                            # 提取歌曲信息
+                            song_info = {
                                 "id": item.get("id"),
                                 "name": item.get("name"),
-                                "artist": ", ".join([artist.get("name") for artist in item.get("artists", [])]),
-                                "album": item.get("album", {}).get("name"),
-                                "audio_url": f"https://music.163.com/song/media/outer/url?id={item.get('id')}.mp3"
+                                "artist": ", ".join([artist.get("name", "") for artist in item.get("artists", [])]),
+                                "url": item.get("url"),
+                                "audio_url": item.get("audio") or item.get("url"),
+                                "platform": self.music_platform
                             }
-                            songs.append(song)
+                            songs.append(song_info)
                     
                     return songs[:self.show_song_count]
         except Exception as e:
             logger.error(f"音乐搜索失败：{e}")
             return []
     
-    async def _show_search_result(self, message: AstrMessageEvent, songs: list):
+    def _show_search_result(self, message: AstrMessageEvent, songs: list):
         """展示搜索结果"""
-        if self.search_display_mode == "文字":
-            # 文字模式展示
-            response = "搜索结果：\n"
-            for i, song in enumerate(songs):
-                response += f"{i+1}. {song.get('name', '未知歌曲')} - {song.get('artist', '未知歌手')}\n"
-            
-            from astrbot.api.all import CommandResult
-            await message.send(CommandResult().message(response).use_t2i(False))
-        else:
-            # 图片模式展示（这里简化处理，实际应该生成图片）
-            response = "搜索结果：\n"
-            for i, song in enumerate(songs):
-                response += f"{i+1}. {song.get('name', '未知歌曲')} - {song.get('artist', '未知歌手')}\n"
-            
-            from astrbot.api.all import CommandResult
-            await message.send(CommandResult().message(response).use_t2i(False))
+        response = "搜索结果：\n"
+        for i, song in enumerate(songs):
+            response += f"{i+1}. {song.get('name', '未知歌曲')} - {song.get('artist', '未知歌手')}\n"
+        
+        response += f"\n请输入序号选择歌曲（{self.timeout}秒后超时）"
+        return response
     
     async def _play_song(self, message: AstrMessageEvent, song: dict):
         """播放歌曲"""
-        song_id = song.get("id")
-        
-        if not song_id:
-            from astrbot.api.all import CommandResult
-            await message.send(CommandResult().error("歌曲ID获取失败").use_t2i(False))
-            return
-        
         try:
             if self.send_song_mode == "卡片":
                 # 卡片模式播放（仅支持QQ平台）
@@ -515,15 +518,22 @@ class Main(Star):
                     client = message.bot
                     is_private = message.is_private_chat()
                     
-                    # 获取歌曲ID
-                    music_id = await self._get_music_id(song_id)
+                    # 直接使用搜索到的歌曲ID
+                    music_id = song.get("id")
+                    
+                    # 映射平台类型
+                    platform_type = "163"  # 默认网易云
+                    if self.music_platform == "QQ":
+                        platform_type = "qq"
+                    elif self.music_platform == "酷我":
+                        platform_type = "163"  # 酷我暂时使用网易云类型
                     
                     payloads = {
                         "message": [
                             {
                                 "type": "music",
                                 "data": {
-                                    "type": "163" if self.music_platform == "网易" else "qq" if self.music_platform == "QQ" else "163",
+                                    "type": platform_type,
                                     "id": str(music_id),
                                 },
                             }
@@ -543,7 +553,9 @@ class Main(Star):
                 # 语音模式播放
                 audio_url = song.get("audio_url")
                 if audio_url:
-                    await message.send(message.chain_result([Record.fromURL(audio_url)]))
+                    from astrbot.api.all import CommandResult
+                    await message.send(CommandResult().message(f"语音播放链接：{audio_url}").use_t2i(False))
+                    # 注意：实际语音播放需要使用Record组件，但需要确保API返回的是有效的语音文件URL
                 else:
                     # 降级为文字模式
                     await self._send_text_song(message, song)
@@ -551,18 +563,17 @@ class Main(Star):
                 # 默认文字模式
                 await self._send_text_song(message, song)
             
-            # 如果启用了歌词，发送歌词图片
+            # 如果启用了歌词，发送歌词信息
             if self.enable_lyrics:
-                await self._send_lyrics(message, song_id)
+                song_name = song.get("name", "未知歌曲")
+                artist = song.get("artist", "未知歌手")
+                from astrbot.api.all import CommandResult
+                await message.send(CommandResult().message(f"{song_name} - {artist}\n\n歌词功能正在开发中...").use_t2i(False))
                 
         except Exception as e:
             logger.error(f"播放歌曲失败：{e}")
             from astrbot.api.all import CommandResult
             await message.send(CommandResult().error(f"播放歌曲失败：{str(e)}").use_t2i(False))
-    
-    async def _get_music_id(self, song_id: str) -> str:
-        """获取音乐平台的歌曲ID，直接返回网易云音乐ID"""
-        return song_id
     
     async def _send_text_song(self, message: AstrMessageEvent, song: dict):
         """发送文字形式的歌曲信息"""
@@ -576,12 +587,6 @@ class Main(Star):
         
         from astrbot.api.all import CommandResult
         await message.send(CommandResult().message(response).use_t2i(False))
-    
-    async def _send_lyrics(self, message: AstrMessageEvent, song_id: str):
-        """发送歌词图片"""
-        # 这里简化处理，实际应该调用API获取歌词并生成图片
-        from astrbot.api.all import CommandResult
-        await message.send(CommandResult().message("歌词功能暂未实现").use_t2i(False))
     
     async def terminate(self):
         """插件卸载/重载时调用"""
