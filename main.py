@@ -422,6 +422,56 @@ class Main(Star):
             yield message.error_result(f"请求Minecraft服务器查询时发生错误：{str(e)}").use_t2i(False)
             return
 
+    @filter.command("代理ip")
+    async def proxy_ip(self, message: AstrMessageEvent):
+        """获取socks5代理IP信息"""
+        api_url = "https://api.pearktrue.cn/api/proxy/"
+        
+        try:
+            # 构造请求参数，默认获取socks5代理
+            params = {
+                "agreement": "socks5"
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(api_url, params=params) as resp:
+                    if resp.status != 200:
+                        yield message.error_result("请求代理IP失败，服务器返回错误状态码").use_t2i(False)
+                        return
+                    
+                    result = await resp.json()
+                    
+                    if result.get("code") != 200:
+                        yield message.error_result(f"获取失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                        return
+                    
+                    # 格式化输出结果
+                    response = f"成功获取ip\n"
+                    response += f"时间：{result.get('time', '未知')}\n"
+                    response += f"类型：{result.get('type', '未知')}\n"
+                    response += f"ip:{result.get('proxy', '未知')}"
+                    
+                    yield message.plain_result(response).use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.error_result("无法连接到代理IP服务器，请稍后重试或检查网络连接").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.error_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError:
+            logger.error("JSON解析错误")
+            yield message.error_result("服务器返回数据格式错误").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求代理IP时发生错误：{e}")
+            yield message.error_result(f"请求代理IP时发生错误：{str(e)}").use_t2i(False)
+            return
+
     async def terminate(self):
         """插件卸载/重载时调用"""
         pass
