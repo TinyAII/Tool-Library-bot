@@ -552,6 +552,65 @@ class Main(Star):
             yield message.plain_result(f"请求油价查询时发生错误：{str(e)}").use_t2i(False)
             return
 
+    @filter.command("qq估价")
+    async def qq_valuation(self, message: AstrMessageEvent):
+        """查询指定QQ号的估价信息"""
+        # 提取QQ号参数
+        msg = message.message_str.replace("qq估价", "").strip()
+        
+        if not msg:
+            yield message.plain_result("正确指令：qq估价 <QQ号>\n\n示例：qq估价 123456").use_t2i(False)
+            return
+        
+        qq_number = msg.strip()
+        api_url = "https://free.wqwlkj.cn/wqwlapi/qq_gj.php"
+        
+        try:
+            # 构造请求参数
+            params = {
+                "qq": qq_number,
+                "type": "json"
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(api_url, params=params) as resp:
+                    if resp.status != 200:
+                        yield message.plain_result("请求QQ估价失败，服务器返回错误状态码").use_t2i(False)
+                        return
+                    
+                    result = await resp.json()
+                    
+                    if result.get("code") != 1:
+                        yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                        return
+                    
+                    # 格式化输出结果
+                    response = f"成功估价【{result.get('qq', qq_number)}】\n"
+                    response += f"评估：{result.get('valuation', 0)}元\n"
+                    response += f"特点：{result.get('law', '')}\n"
+                    response += f"数字：{result.get('digit', '')}"
+                    
+                    yield message.plain_result(response).use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result("无法连接到QQ估价服务器，请稍后重试或检查网络连接").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError:
+            logger.error("JSON解析错误")
+            yield message.plain_result("服务器返回数据格式错误").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求QQ估价时发生错误：{e}")
+            yield message.plain_result(f"请求QQ估价时发生错误：{str(e)}").use_t2i(False)
+            return
+
     async def terminate(self):
         """插件卸载/重载时调用"""
         pass
