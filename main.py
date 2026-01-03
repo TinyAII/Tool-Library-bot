@@ -167,7 +167,9 @@ class Main(Star):
                         yield message.plain_result("请求战力查询失败，服务器返回错误状态码").use_t2i(False)
                         return
                     
-                    result = await resp.json()
+                    # 先读取响应文本，再使用json.loads()解析，解决Content-Type问题
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
                     
                     if result.get("code") != 200:
                         yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
@@ -239,7 +241,9 @@ class Main(Star):
                         yield message.plain_result("请求路线查询失败，服务器返回错误状态码").use_t2i(False)
                         return
                     
-                    result = await resp.json()
+                    # 先读取响应文本，再使用json.loads()解析，解决Content-Type问题
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
                     
                     if result.get("code") != 200:
                         yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
@@ -382,11 +386,13 @@ class Main(Star):
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(api_url, params=params) as resp:
                     if resp.status != 200:
-                        result = await resp.json()
+                        raw_content = await resp.text()
+                        result = json.loads(raw_content)
                         yield message.plain_result(f"查询失败：{result.get('message', '未知错误')}").use_t2i(False)
                         return
                     
-                    data = await resp.json()
+                    raw_content = await resp.text()
+                    data = json.loads(raw_content)
                     
                     if data.get('code') != 200:
                         yield message.plain_result(f"查询失败：{data.get('message', '未知错误')}").use_t2i(False)
@@ -440,7 +446,9 @@ class Main(Star):
                         yield message.plain_result("请求代理IP失败，服务器返回错误状态码").use_t2i(False)
                         return
                     
-                    result = await resp.json()
+                    # 先读取响应文本，再使用json.loads()解析，解决Content-Type问题
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
                     
                     if result.get("code") != 200:
                         yield message.plain_result(f"获取失败：{result.get('msg', '未知错误')}").use_t2i(False)
@@ -492,14 +500,27 @@ class Main(Star):
                 "type": "json"
             }
             
-            timeout = aiohttp.ClientTimeout(total=30)
+            # 添加详细日志
+            logger.info(f"开始查询{city_name}的油价，API地址：{api_url}，参数：{params}")
+            
+            timeout = aiohttp.ClientTimeout(total=60)  # 延长超时时间到60秒
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(api_url, params=params) as resp:
+                    logger.info(f"油价查询响应状态码：{resp.status}")
+                    logger.info(f"油价查询响应头：{resp.headers}")
+                    
                     if resp.status != 200:
-                        yield message.plain_result("请求油价查询失败，服务器返回错误状态码").use_t2i(False)
+                        yield message.plain_result(f"请求油价查询失败，服务器返回错误状态码：{resp.status}").use_t2i(False)
                         return
                     
-                    result = await resp.json()
+                    # 先读取原始响应内容，方便调试
+                    raw_content = await resp.text()
+                    logger.info(f"油价查询原始响应：{raw_content}")
+                    
+                    # 尝试解析JSON，使用json.loads()直接解析文本
+                    result = json.loads(raw_content)
+                    
+                    logger.info(f"油价查询解析结果：{result}")
                     
                     if result.get("code") != 1:
                         yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
@@ -537,15 +558,15 @@ class Main(Star):
                         
         except aiohttp.ClientError as e:
             logger.error(f"网络连接错误：{e}")
-            yield message.plain_result("无法连接到油价查询服务器，请稍后重试或检查网络连接").use_t2i(False)
+            yield message.plain_result(f"无法连接到油价查询服务器：{str(e)}").use_t2i(False)
             return
         except asyncio.TimeoutError:
             logger.error("请求超时")
-            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            yield message.plain_result("请求超时，请稍后重试，服务器响应较慢").use_t2i(False)
             return
-        except json.JSONDecodeError:
-            logger.error("JSON解析错误")
-            yield message.plain_result("服务器返回数据格式错误").use_t2i(False)
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
             return
         except Exception as e:
             logger.error(f"请求油价查询时发生错误：{e}")
@@ -579,7 +600,9 @@ class Main(Star):
                         yield message.plain_result("请求QQ估价失败，服务器返回错误状态码").use_t2i(False)
                         return
                     
-                    result = await resp.json()
+                    # 先读取响应文本，再使用json.loads()解析，解决Content-Type问题
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
                     
                     if result.get("code") != 1:
                         yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
