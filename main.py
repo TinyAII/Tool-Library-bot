@@ -634,6 +634,75 @@ class Main(Star):
             yield message.plain_result(f"请求QQ估价时发生错误：{str(e)}").use_t2i(False)
             return
 
+    @filter.command("星座运势")
+    async def constellation_fortune(self, message: AstrMessageEvent):
+        """查询指定星座的运势图片"""
+        # 提取星座名称参数
+        msg = message.message_str.replace("星座运势", "").strip()
+        
+        if not msg:
+            yield message.plain_result("正确指令：星座运势 <星座名>\n\n示例：星座运势 白羊\n星座运势 白羊座").use_t2i(False)
+            return
+        
+        constellation = msg.strip()
+        api_url = "https://api.xcvts.cn/api/hotlist/xzys"
+        
+        try:
+            # 构造请求参数
+            params = {
+                "msg": constellation
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(api_url, params=params) as resp:
+                    if resp.status != 200:
+                        yield message.plain_result(f"请求星座运势失败，服务器返回错误状态码：{resp.status}").use_t2i(False)
+                        return
+                    
+                    # 检查响应是否为图片
+                    content_type = resp.headers.get("content-type", "")
+                    if not content_type.startswith("image/"):
+                        # 读取响应内容，查看是否为错误信息
+                        error_content = await resp.text()
+                        yield message.plain_result(f"获取星座运势图片失败：{error_content}").use_t2i(False)
+                        return
+                    
+                    # 下载图片到本地
+                    import uuid
+                    import os
+                    from astrbot.api.message_components import Image
+                    
+                    # 创建存储目录
+                    save_dir = f"data/{self.PLUGIN_NAME}_images"
+                    if not os.path.exists(save_dir):
+                        os.makedirs(save_dir)
+                    
+                    # 生成唯一文件名，使用.png后缀因为API返回的是图片
+                    file_name = f"{uuid.uuid4().hex}.png"
+                    file_path = os.path.join(save_dir, file_name)
+                    
+                    # 下载图片
+                    with open(file_path, "wb") as f:
+                        f.write(await resp.read())
+                    
+                    # 使用本地文件路径发送图片
+                    yield message.chain_result([Image.fromFileSystem(file_path)]).use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result(f"无法连接到星座运势服务器：{str(e)}").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求星座运势时发生错误：{e}")
+            yield message.plain_result(f"请求星座运势时发生错误：{str(e)}").use_t2i(False)
+            return
+
     async def terminate(self):
         """插件卸载/重载时调用"""
         pass
