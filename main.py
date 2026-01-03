@@ -147,7 +147,7 @@ class Main(Star):
         msg = message.message_str.replace("战力查询", "").strip()
         
         if not msg:
-            yield message.error_result("正确示例：\n\n战力查询 小乔").use_t2i(False)
+            yield message.plain_result("缺少参数，正确示例：\n\n战力查询 小乔").use_t2i(False)
             return
         
         hero_name = msg.strip()
@@ -164,18 +164,18 @@ class Main(Star):
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(api_url, params=params) as resp:
                     if resp.status != 200:
-                        yield message.error_result("请求战力查询失败，服务器返回错误状态码").use_t2i(False)
+                        yield message.plain_result("请求战力查询失败，服务器返回错误状态码").use_t2i(False)
                         return
                     
                     result = await resp.json()
                     
                     if result.get("code") != 200:
-                        yield message.error_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                        yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
                         return
                     
                     data = result.get("data", {})
                     if not data:
-                        yield message.error_result("未查询到该英雄的战力信息").use_t2i(False)
+                        yield message.plain_result("未查询到该英雄的战力信息").use_t2i(False)
                         return
                     
                     # 格式化输出结果
@@ -190,19 +190,19 @@ class Main(Star):
                         
         except aiohttp.ClientError as e:
             logger.error(f"网络连接错误：{e}")
-            yield message.error_result("无法连接到战力查询服务器，请稍后重试或检查网络连接").use_t2i(False)
+            yield message.plain_result("无法连接到战力查询服务器，请稍后重试或检查网络连接").use_t2i(False)
             return
         except asyncio.TimeoutError:
             logger.error("请求超时")
-            yield message.error_result("请求超时，请稍后重试").use_t2i(False)
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
             return
         except json.JSONDecodeError:
             logger.error("JSON解析错误")
-            yield message.error_result("服务器返回数据格式错误").use_t2i(False)
+            yield message.plain_result("服务器返回数据格式错误").use_t2i(False)
             return
         except Exception as e:
             logger.error(f"请求战力查询时发生错误：{e}")
-            yield message.error_result(f"请求战力查询时发生错误：{str(e)}").use_t2i(False)
+            yield message.plain_result(f"请求战力查询时发生错误：{str(e)}").use_t2i(False)
             return
 
     @filter.command("路线查询")
@@ -211,13 +211,13 @@ class Main(Star):
         msg = message.message_str.replace("路线查询", "").strip()
         
         if not msg:
-            yield message.error_result("正确指令：路线查询 <出发地> <目的地>\n\n示例：路线查询 广州 深圳").use_t2i(False)
+            yield message.plain_result("正确指令：路线查询 <出发地> <目的地>\n\n示例：路线查询 广州 深圳").use_t2i(False)
             return
         
         # 解析出发地和目的地
         parts = msg.split()
         if len(parts) < 2:
-            yield message.error_result("请输入完整的出发地和目的地\n\n正确指令：路线查询 <出发地> <目的地>\n\n示例：路线查询 广州 深圳").use_t2i(False)
+            yield message.plain_result("请输入完整的出发地和目的地\n\n正确指令：路线查询 <出发地> <目的地>\n\n示例：路线查询 广州 深圳").use_t2i(False)
             return
         
         from_city = parts[0]
@@ -236,18 +236,18 @@ class Main(Star):
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.post(api_url, json=payload) as resp:
                     if resp.status != 200:
-                        yield message.error_result("请求路线查询失败，服务器返回错误状态码").use_t2i(False)
+                        yield message.plain_result("请求路线查询失败，服务器返回错误状态码").use_t2i(False)
                         return
                     
                     result = await resp.json()
                     
                     if result.get("code") != 200:
-                        yield message.error_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                        yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
                         return
                     
                     data = result.get("data", {})
                     if not data:
-                        yield message.error_result("未查询到该路线的信息").use_t2i(False)
+                        yield message.plain_result("未查询到该路线的信息").use_t2i(False)
                         return
                     
                     # 格式化输出结果
@@ -265,19 +265,19 @@ class Main(Star):
                         
         except aiohttp.ClientError as e:
             logger.error(f"网络连接错误：{e}")
-            yield message.error_result("无法连接到路线查询服务器，请稍后重试或检查网络连接").use_t2i(False)
+            yield message.plain_result("无法连接到路线查询服务器，请稍后重试或检查网络连接").use_t2i(False)
             return
         except asyncio.TimeoutError:
             logger.error("请求超时")
-            yield message.error_result("请求超时，请稍后重试").use_t2i(False)
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
             return
         except json.JSONDecodeError:
             logger.error("JSON解析错误")
-            yield message.error_result("服务器返回数据格式错误").use_t2i(False)
+            yield message.plain_result("服务器返回数据格式错误").use_t2i(False)
             return
         except Exception as e:
             logger.error(f"请求路线查询时发生错误：{e}")
-            yield message.error_result(f"请求路线查询时发生错误：{str(e)}").use_t2i(False)
+            yield message.plain_result(f"请求路线查询时发生错误：{str(e)}").use_t2i(False)
             return
 
     @filter.command("绘画")
@@ -309,14 +309,14 @@ class Main(Star):
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(api_url, params=params) as resp:
                     if resp.status != 200:
-                        yield message.error_result("请求AI绘画失败，服务器返回错误状态码").use_t2i(False)
+                        yield message.plain_result("请求AI绘画失败，服务器返回错误状态码").use_t2i(False)
                         return
                     
                     image_url = await resp.text()
                     
                     # 检查返回的是否为有效的URL
                     if not image_url.startswith("http"):
-                        yield message.error_result(f"AI绘画生成失败：{image_url}").use_t2i(False)
+                        yield message.plain_result(f"AI绘画生成失败：{image_url}").use_t2i(False)
                         return
                     
                     # 下载图片到本地并发送
@@ -336,7 +336,7 @@ class Main(Star):
                     # 下载图片
                     async with session.get(image_url, timeout=30) as img_resp:
                         if img_resp.status != 200:
-                            yield message.error_result("下载图片失败，服务器返回错误状态码").use_t2i(False)
+                            yield message.plain_result("下载图片失败，服务器返回错误状态码").use_t2i(False)
                             return
                         
                         with open(file_path, "wb") as f:
@@ -348,15 +348,15 @@ class Main(Star):
                         
         except aiohttp.ClientError as e:
             logger.error(f"网络连接错误：{e}")
-            yield message.error_result("无法连接到AI绘画服务器，请稍后重试或检查网络连接").use_t2i(False)
+            yield message.plain_result("无法连接到AI绘画服务器，请稍后重试或检查网络连接").use_t2i(False)
             return
         except asyncio.TimeoutError:
             logger.error("请求超时")
-            yield message.error_result("请求超时，请稍后重试").use_t2i(False)
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
             return
         except Exception as e:
             logger.error(f"请求AI绘画时发生错误：{e}")
-            yield message.error_result(f"请求AI绘画时发生错误：{str(e)}").use_t2i(False)
+            yield message.plain_result(f"请求AI绘画时发生错误：{str(e)}").use_t2i(False)
             return
 
     @filter.command("mc服务器")
@@ -366,7 +366,7 @@ class Main(Star):
         msg = message.message_str.replace("mc服务器", "").strip()
         
         if not msg:
-            yield message.error_result("缺少必要参数，正确示例：\n\nmc服务器 121.com").use_t2i(False)
+            yield message.plain_result("缺少必要参数，正确示例：\n\nmc服务器 121.com").use_t2i(False)
             return
         
         server_addr = msg.strip()
@@ -383,13 +383,13 @@ class Main(Star):
                 async with session.get(api_url, params=params) as resp:
                     if resp.status != 200:
                         result = await resp.json()
-                        yield message.error_result(f"查询失败：{result.get('message', '未知错误')}").use_t2i(False)
+                        yield message.plain_result(f"查询失败：{result.get('message', '未知错误')}").use_t2i(False)
                         return
                     
                     data = await resp.json()
                     
                     if data.get('code') != 200:
-                        yield message.error_result(f"查询失败：{data.get('message', '未知错误')}").use_t2i(False)
+                        yield message.plain_result(f"查询失败：{data.get('message', '未知错误')}").use_t2i(False)
                         return
                     
                     # 格式化输出结果
@@ -407,19 +407,19 @@ class Main(Star):
                         
         except aiohttp.ClientError as e:
             logger.error(f"网络连接错误：{e}")
-            yield message.error_result("无法连接到查询服务器，请稍后重试或检查网络连接").use_t2i(False)
+            yield message.plain_result("无法连接到查询服务器，请稍后重试或检查网络连接").use_t2i(False)
             return
         except asyncio.TimeoutError:
             logger.error("请求超时")
-            yield message.error_result("请求超时，请稍后重试").use_t2i(False)
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
             return
         except json.JSONDecodeError:
             logger.error("JSON解析错误")
-            yield message.error_result("服务器返回数据格式错误").use_t2i(False)
+            yield message.plain_result("服务器返回数据格式错误").use_t2i(False)
             return
         except Exception as e:
             logger.error(f"请求Minecraft服务器查询时发生错误：{e}")
-            yield message.error_result(f"请求Minecraft服务器查询时发生错误：{str(e)}").use_t2i(False)
+            yield message.plain_result(f"请求Minecraft服务器查询时发生错误：{str(e)}").use_t2i(False)
             return
 
     @filter.command("代理ip")
@@ -437,13 +437,13 @@ class Main(Star):
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(api_url, params=params) as resp:
                     if resp.status != 200:
-                        yield message.error_result("请求代理IP失败，服务器返回错误状态码").use_t2i(False)
+                        yield message.plain_result("请求代理IP失败，服务器返回错误状态码").use_t2i(False)
                         return
                     
                     result = await resp.json()
                     
                     if result.get("code") != 200:
-                        yield message.error_result(f"获取失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                        yield message.plain_result(f"获取失败：{result.get('msg', '未知错误')}").use_t2i(False)
                         return
                     
                     # 格式化输出结果
@@ -457,19 +457,19 @@ class Main(Star):
                         
         except aiohttp.ClientError as e:
             logger.error(f"网络连接错误：{e}")
-            yield message.error_result("无法连接到代理IP服务器，请稍后重试或检查网络连接").use_t2i(False)
+            yield message.plain_result("无法连接到代理IP服务器，请稍后重试或检查网络连接").use_t2i(False)
             return
         except asyncio.TimeoutError:
             logger.error("请求超时")
-            yield message.error_result("请求超时，请稍后重试").use_t2i(False)
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
             return
         except json.JSONDecodeError:
             logger.error("JSON解析错误")
-            yield message.error_result("服务器返回数据格式错误").use_t2i(False)
+            yield message.plain_result("服务器返回数据格式错误").use_t2i(False)
             return
         except Exception as e:
             logger.error(f"请求代理IP时发生错误：{e}")
-            yield message.error_result(f"请求代理IP时发生错误：{str(e)}").use_t2i(False)
+            yield message.plain_result(f"请求代理IP时发生错误：{str(e)}").use_t2i(False)
             return
 
     async def terminate(self):
