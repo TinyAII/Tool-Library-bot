@@ -472,6 +472,86 @@ class Main(Star):
             yield message.plain_result(f"请求代理IP时发生错误：{str(e)}").use_t2i(False)
             return
 
+    @filter.command("油价查询")
+    async def oil_price(self, message: AstrMessageEvent):
+        """查询指定城市的油价信息"""
+        # 提取城市名称参数
+        msg = message.message_str.replace("油价查询", "").strip()
+        
+        if not msg:
+            yield message.plain_result("正确指令：油价查询 <城市名>\n\n示例：油价查询 上海").use_t2i(False)
+            return
+        
+        city_name = msg.strip()
+        api_url = "https://free.wqwlkj.cn/wqwlapi/oilprice.php"
+        
+        try:
+            # 构造请求参数
+            params = {
+                "city": city_name,
+                "type": "json"
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(api_url, params=params) as resp:
+                    if resp.status != 200:
+                        yield message.plain_result("请求油价查询失败，服务器返回错误状态码").use_t2i(False)
+                        return
+                    
+                    result = await resp.json()
+                    
+                    if result.get("code") != 1:
+                        yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                        return
+                    
+                    # 格式化输出结果
+                    data = result.get("data", [])
+                    qushi = result.get("qushi", "")
+                    
+                    # 提取不同类型的油价
+                    oil_prices = {}
+                    for item in data:
+                        oil_type = item.get("type", "")
+                        price = item.get("price", 0)
+                        # 提取油价类型，如"92#汽油"、"95#汽油"等
+                        if "92#" in oil_type:
+                            oil_prices["92"] = price
+                        elif "95#" in oil_type:
+                            oil_prices["95"] = price
+                        elif "98#" in oil_type:
+                            oil_prices["98"] = price
+                        elif "0#" in oil_type:
+                            oil_prices["0"] = price
+                    
+                    # 构造响应消息
+                    response = f"查询成功！地区[{city_name}]\n"
+                    response += f"趋势：前{qushi}\n"
+                    response += f"92号汽油：{oil_prices.get('92', '未知')}元/升\n"
+                    response += f"95号汽油：{oil_prices.get('95', '未知')}元/升\n"
+                    response += f"98号汽油：{oil_prices.get('98', '未知')}元/升\n"
+                    response += f"0号柴油：{oil_prices.get('0', '未知')}元/升"
+                    
+                    yield message.plain_result(response).use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result("无法连接到油价查询服务器，请稍后重试或检查网络连接").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError:
+            logger.error("JSON解析错误")
+            yield message.plain_result("服务器返回数据格式错误").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求油价查询时发生错误：{e}")
+            yield message.plain_result(f"请求油价查询时发生错误：{str(e)}").use_t2i(False)
+            return
+
     async def terminate(self):
         """插件卸载/重载时调用"""
         pass
