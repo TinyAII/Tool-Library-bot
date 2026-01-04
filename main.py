@@ -58,6 +58,211 @@ class Main(Star):
     def update_good_morning_cd(self, user_id: str, current_time: datetime.datetime):
         """更新用户的CD时间"""
         self.good_morning_cd[user_id] = current_time
+        
+    # 菜单样式的HTML模板
+    MENU_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>工具箱菜单</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background-color: #f5f5f5;
+                margin: 0;
+                padding: 20px;
+                line-height: 2.0;
+            }
+            .container {
+                max-width: 950px;
+                margin: 0 auto;
+                background-color: white;
+                padding: 40px;
+                border-radius: 12px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            }
+            .menu-title {
+                font-size: 32px;
+                font-weight: bold;
+                color: #28a745;
+                text-align: center;
+                margin-bottom: 40px;
+                padding: 15px;
+                background-color: #e8f5e8;
+                border-radius: 8px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .category-title {
+                font-size: 24px;
+                font-weight: bold;
+                color: #17a2b8;
+                margin: 30px 0 20px 0;
+                padding: 10px 0;
+                border-bottom: 3px solid #17a2b8;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .menu-item {
+                font-size: 18px;
+                line-height: 2.2;
+                margin: 15px 0;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                border-left: 4px solid #ffc107;
+            }
+            .command-name {
+                font-weight: bold;
+                color: #dc3545;
+                font-size: 20px;
+            }
+            .command-format {
+                color: #333;
+                font-weight: normal;
+            }
+            .command-desc {
+                color: #495057;
+                font-weight: bold;
+            }
+            .example-section {
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 2px solid #e9ecef;
+            }
+            .example-title {
+                font-size: 22px;
+                font-weight: bold;
+                color: #6f42c1;
+                margin-bottom: 20px;
+            }
+            .example-item {
+                font-size: 16px;
+                line-height: 1.8;
+                margin: 10px 0;
+                padding: 10px;
+                background-color: #e7f5ff;
+                border-radius: 6px;
+                border-left: 4px solid #007bff;
+            }
+            .note-section {
+                margin-top: 30px;
+                padding: 15px;
+                background-color: #fff3cd;
+                border: 1px solid #ffeeba;
+                border-radius: 6px;
+                color: #856404;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="menu-title">🔧 工具箱插件菜单 🔧</h1>
+            {{content}}
+        </div>
+    </body>
+    </html>
+    '''
+    
+    async def text_to_image_menu_style(self, text: str) -> str:
+        """使用菜单样式的HTML模板生成图片"""
+        try:
+            # 将文本内容转换为结构化HTML
+            lines = text.split('\n')
+            html_parts = []
+            in_example_section = False
+            
+            for line in lines:
+                line = line.rstrip()
+                
+                # 跳过标题行（已在模板中处理）
+                if line == "🔧 工具箱插件菜单 🔧":
+                    continue
+                
+                # 检测分类标题
+                elif line.startswith('【') and line.endswith('】'):
+                    category_name = line.strip('【】')
+                    html_parts.append(f'<h2 class="category-title">{category_name}</h2>')
+                    in_example_section = False
+                    continue
+                
+                # 检测使用示例部分
+                elif line.startswith('📌 使用示例：'):
+                    html_parts.append(f'<div class="example-section">')
+                    html_parts.append(f'<h3 class="example-title">📌 使用示例：</h3>')
+                    in_example_section = True
+                    continue
+                
+                # 检测注意事项部分
+                elif line.startswith('💡 所有命令'):
+                    html_parts.append(f'<div class="note-section">{line}</div>')
+                    in_example_section = False
+                    continue
+                
+                # 处理空行
+                elif line.strip() == '':
+                    continue
+                
+                # 处理示例条目
+                elif in_example_section:
+                    html_parts.append(f'<div class="example-item">{line}</div>')
+                
+                # 处理命令条目
+                elif ' - ' in line:
+                    # 解析命令条目
+                    command_part, desc_part = line.split(' - ', 1)
+                    
+                    # 提取命令名称和格式
+                    command_format = command_part.strip()
+                    command_desc = desc_part.strip()
+                    
+                    # 提取命令名称（第一个空格前的内容）
+                    if ' ' in command_format:
+                        command_name = command_format.split(' ')[0]
+                    else:
+                        command_name = command_format
+                    
+                    # 生成HTML
+                    html_parts.append(f'<div class="menu-item">')
+                    html_parts.append(f'<span class="command-name">{command_name}</span> ')
+                    html_parts.append(f'<span class="command-format">{command_format}</span> ')
+                    html_parts.append(f'<span class="command-desc">- {command_desc}</span>')
+                    html_parts.append(f'</div>')
+                
+                # 处理其他文本行
+                else:
+                    html_parts.append(f'<div class="content-line">{line}</div>')
+            
+            # 关闭示例部分标签
+            if in_example_section:
+                html_parts.append(f'</div>')
+            
+            # 组装最终HTML内容
+            formatted_html = '\n'.join(html_parts)
+            
+            # 渲染HTML模板
+            html_content = self.MENU_TEMPLATE.replace("{{content}}", formatted_html)
+            
+            # 使用html_render函数生成图片
+            options = {
+                "full_page": True,
+                "type": "jpeg",
+                "quality": 95,
+            }
+            
+            image_url = await self.html_render(
+                html_content,  # 渲染后的HTML内容
+                {},  # 空数据字典
+                True,  # 返回URL
+                options  # 图片生成选项
+            )
+            
+            return image_url
+        except Exception as e:
+            logger.error(f"菜单样式图片生成失败：{e}")
+            # 回退到默认的text_to_image方法
+            return await self.text_to_image(text)
 
     @filter.regex(r"^(早安|晚安)")
     async def good_morning(self, message: AstrMessageEvent):
@@ -736,8 +941,8 @@ class Main(Star):
 
 💡 所有命令支持群聊和私聊使用"""
         
-        # 使用text_to_image方法生成图片
-        image_url = await self.text_to_image(menu_text)
+        # 使用自定义的菜单样式图片生成方法
+        image_url = await self.text_to_image_menu_style(menu_text)
         
         yield message.image_result(image_url).use_t2i(False)
 
