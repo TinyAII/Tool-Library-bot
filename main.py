@@ -736,7 +736,10 @@ class Main(Star):
 
 💡 所有命令支持群聊和私聊使用"""
         
-        yield message.plain_result(menu_text).use_t2i(False)
+        # 使用text_to_image方法生成图片
+        image_url = await self.text_to_image(menu_text)
+        
+        yield message.image_result(image_url).use_t2i(False)
 
     async def terminate(self):
         """插件卸载/重载时调用"""
