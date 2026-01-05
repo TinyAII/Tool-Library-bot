@@ -2447,16 +2447,26 @@ class Main(Star):
                                     except ValueError:
                                         violation_score = 0
                                 
+                                # 计算违规程度
+                                if violation_score >= 7:
+                                    severity = "非常恶劣"
+                                elif violation_score >= 4:
+                                    severity = "中度恶劣"
+                                elif violation_score >= 1:
+                                    severity = "轻度恶劣"
+                                else:
+                                    severity = "无"
+                                
                                 # 检查AI审核结果
                                 if safety_status == "false":
                                     # 内容违规，返回违规提示
                                     if intercept_reason:
-                                        response = f"您提供的密文解析后遭到QQ安全中心检测系统拦截，不予放行!!!\n\n违规内容含：{intercept_reason}"
+                                        response = f"您提供的密文解析后遭到QQ安全中心检测系统拦截，不予放行!!!\n\n违规内容含：{intercept_reason}\n违规程度：{violation_score}分<{severity}>"
                                     else:
-                                        response = "您提供的密文解析后遭到QQ安全中心检测系统拦截，不予放行!!!"
+                                        response = f"您提供的密文解析后遭到QQ安全中心检测系统拦截，不予放行!!!\n\n违规程度：{violation_score}分<{severity}>"
                                     
                                     # 记录违规分数到日志
-                                    logger.warning(f"解密内容违规，原因：{intercept_reason}，违规分数：{violation_score}")
+                                    logger.warning(f"解密内容违规，原因：{intercept_reason}，违规分数：{violation_score}，违规程度：{severity}")
                                     
                                     yield message.plain_result(response).use_t2i(False)
                                     return
