@@ -1363,17 +1363,41 @@ class Main(Star):
         msg = message.message_str.replace("战力查询", "").strip()
         
         if not msg:
-            yield message.plain_result("缺少参数，正确示例：\n\n战力查询 小乔").use_t2i(False)
+            yield message.plain_result("缺少参数，正确示例：\n\n战力查询 安卓qq 小乔\n战力查询 苹果微信 李白").use_t2i(False)
             return
         
-        hero_name = msg.strip()
+        # 解析区服类型和英雄名
+        parts = msg.split()
+        if len(parts) < 2:
+            yield message.plain_result("参数格式错误，请输入区服类型和英雄名\n\n正确示例：\n战力查询 安卓qq 小乔\n战力查询 苹果微信 李白").use_t2i(False)
+            return
+        
+        # 区服类型映射关系
+        server_type_map = {
+            "安卓qq": "aqq",
+            "安卓微信": "awx",
+            "苹果qq": "iqq",
+            "苹果微信": "iwx"
+        }
+        
+        # 提取区服类型和英雄名
+        server_type_input = parts[0]
+        hero_name = " ".join(parts[1:])
+        
+        # 验证区服类型
+        if server_type_input not in server_type_map:
+            yield message.plain_result(f"区服类型错误，请输入以下区服类型之一：\n{', '.join(server_type_map.keys())}\n\n正确示例：\n战力查询 安卓qq 小乔").use_t2i(False)
+            return
+        
+        # 获取API使用的区服类型
+        api_server_type = server_type_map[server_type_input]
         api_url = "https://www.sapi.run/hero/select.php"
         
         try:
-            # 默认使用aqq（安卓-QQ区）进行查询
+            # 构造请求参数
             params = {
                 "hero": hero_name,
-                "type": "aqq"
+                "type": api_server_type
             }
             
             timeout = aiohttp.ClientTimeout(total=30)
@@ -2114,6 +2138,134 @@ class Main(Star):
             yield message.plain_result(f"请求星座运势时发生错误：{str(e)}").use_t2i(False)
             return
 
+    @filter.command("/加密")
+    async def shouyu_encrypt(self, message: AstrMessageEvent):
+        """兽语在线加密功能"""
+        # 提取加密内容参数
+        msg = message.message_str.replace("/加密", "").strip()
+        
+        if not msg:
+            yield message.plain_result("正确指令：/加密 <内容>\n\n示例：/加密 121").use_t2i(False)
+            return
+        
+        encrypt_content = msg.strip()
+        api_url = "https://api.jkyai.top/API/shouyu/api.php"
+        
+        try:
+            # 构造请求参数
+            params = {
+                "msg": encrypt_content,
+                "type": "json"
+                # 默认format为空，即加密模式
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(api_url, params=params) as resp:
+                    if resp.status != 200:
+                        yield message.plain_result(f"请求加密失败，服务器返回错误状态码：{resp.status}").use_t2i(False)
+                        return
+                    
+                    # 读取响应文本，解析JSON
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
+                    
+                    # 检查API返回是否成功
+                    if result.get("code") != 1:
+                        yield message.plain_result(f"加密失败：{result.get('text', '未知错误')}").use_t2i(False)
+                        return
+                    
+                    # 提取加密结果
+                    encrypted_text = result.get("data", {}).get("Message", "")
+                    if not encrypted_text:
+                        yield message.plain_result("加密失败：返回结果为空").use_t2i(False)
+                        return
+                    
+                    # 返回加密结果
+                    yield message.plain_result(f"加密结果：{encrypted_text}").use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result(f"无法连接到加密服务器：{str(e)}").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求加密时发生错误：{e}")
+            yield message.plain_result(f"请求加密时发生错误：{str(e)}").use_t2i(False)
+            return
+    
+    @filter.command("/解密")
+    async def shouyu_decrypt(self, message: AstrMessageEvent):
+        """兽语在线解密功能"""
+        # 提取解密内容参数
+        msg = message.message_str.replace("/解密", "").strip()
+        
+        if not msg:
+            yield message.plain_result("正确指令：/解密 <内容>\n\n示例：/解密 嗷～嗷啊").use_t2i(False)
+            return
+        
+        decrypt_content = msg.strip()
+        api_url = "https://api.jkyai.top/API/shouyu/api.php"
+        
+        try:
+            # 构造请求参数
+            params = {
+                "msg": decrypt_content,
+                "type": "json",
+                "format": 1  # format=1表示解密模式
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(api_url, params=params) as resp:
+                    if resp.status != 200:
+                        yield message.plain_result(f"请求解密失败，服务器返回错误状态码：{resp.status}").use_t2i(False)
+                        return
+                    
+                    # 读取响应文本，解析JSON
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
+                    
+                    # 检查API返回是否成功
+                    if result.get("code") != 1:
+                        yield message.plain_result(f"解密失败：{result.get('text', '未知错误')}").use_t2i(False)
+                        return
+                    
+                    # 提取解密结果
+                    decrypted_text = result.get("data", {}).get("Message", "")
+                    if not decrypted_text:
+                        yield message.plain_result("解密失败：返回结果为空").use_t2i(False)
+                        return
+                    
+                    # 返回解密结果
+                    yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result(f"无法连接到解密服务器：{str(e)}").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求解密时发生错误：{e}")
+            yield message.plain_result(f"请求解密时发生错误：{str(e)}").use_t2i(False)
+            return
+    
     @filter.command("工具箱菜单")
     async def toolbox_menu(self, message: AstrMessageEvent):
         """显示工具箱插件的所有可用命令"""
@@ -2139,11 +2291,15 @@ class Main(Star):
 
 【娱乐功能】
 ✨ 星座运势 <星座名> - 查询星座运势图片
+🔒 /加密 <内容> - 兽语在线加密
+🔓 /解密 <内容> - 兽语在线解密
 
 📌 使用示例：
 战力查询 小乔
 路线查询 广州 深圳
 绘画 一只可爱的猫
+/加密 121
+/解密 嗷～嗷啊
 
 💡 所有命令支持群聊和私聊使用"""
         
