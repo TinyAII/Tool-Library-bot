@@ -165,7 +165,7 @@ class Main(Star):
     </html>
     '''
     
-    # 战力查询结果的HTML模板
+    # 战力查询结果的HTML模板（支持四个战区）
     HERO_POWER_TEMPLATE = '''
     <!DOCTYPE html>
     <html lang="zh-CN">
@@ -183,7 +183,7 @@ class Main(Star):
                 color: #333;
             }
             .container {
-                max-width: 600px;
+                max-width: 900px;
                 margin: 0 auto;
                 background-color: white;
                 border-radius: 15px;
@@ -191,48 +191,74 @@ class Main(Star):
                 box-shadow: 0 8px 32px rgba(0,0,0,0.15);
             }
             .title {
-                font-size: 28px;
+                font-size: 32px;
                 font-weight: bold;
                 text-align: center;
                 color: #e74c3c;
                 margin-bottom: 30px;
                 text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
             }
+            .hero-header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background-color: #ecf0f1;
+                border-radius: 10px;
+            }
             .hero-name {
                 font-size: 36px;
                 font-weight: bold;
-                text-align: center;
                 color: #3498db;
-                margin-bottom: 30px;
-                padding: 15px;
-                background-color: #ecf0f1;
-                border-radius: 10px;
+                margin-bottom: 10px;
+            }
+            .update-time {
+                font-size: 14px;
+                color: #7f8c8d;
+            }
+            .platforms-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 25px;
+                margin: 30px 0;
+            }
+            .platform-card {
+                background-color: #f8f9fa;
+                border-radius: 12px;
+                padding: 25px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                border-top: 5px solid #3498db;
+            }
+            .platform-name {
+                font-size: 20px;
+                font-weight: bold;
+                color: #2c3e50;
+                text-align: center;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #ecf0f1;
             }
             .power-item {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                background-color: #f8f9fa;
-                padding: 15px 20px;
                 margin: 15px 0;
-                border-radius: 8px;
-                border-left: 5px solid #3498db;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                padding: 10px 0;
+                border-bottom: 1px solid #ecf0f1;
             }
             .power-label {
-                font-size: 18px;
+                font-size: 16px;
                 font-weight: bold;
                 color: #2c3e50;
             }
             .power-value {
-                font-size: 22px;
+                font-size: 18px;
                 font-weight: bold;
                 color: #e67e22;
             }
             .region {
-                font-size: 14px;
+                font-size: 12px;
                 color: #7f8c8d;
-                margin-left: 10px;
+                margin-left: 8px;
             }
             .footer {
                 margin-top: 30px;
@@ -247,22 +273,91 @@ class Main(Star):
     <body>
         <div class="container">
             <h1 class="title">🏆 王者荣耀战力查询 🏆</h1>
-            <div class="hero-name">{{hero_name}}</div>
-            <div class="power-item">
-                <div class="power-label">国服最低战力<span class="region">全服</span></div>
-                <div class="power-value">{{guobiao}}</div>
+            <div class="hero-header">
+                <div class="hero-name">{{hero_name}}</div>
+                <div class="update-time">数据更新时间：{{updatetime}}</div>
             </div>
-            <div class="power-item">
-                <div class="power-label">省标最低战力<span class="region">{{province}}</span></div>
-                <div class="power-value">{{provincePower}}</div>
-            </div>
-            <div class="power-item">
-                <div class="power-label">市标最低战力<span class="region">{{city}}</span></div>
-                <div class="power-value">{{cityPower}}</div>
-            </div>
-            <div class="power-item">
-                <div class="power-label">区标最低战力<span class="region">{{area}}</span></div>
-                <div class="power-value">{{areaPower}}</div>
+            <div class="platforms-grid">
+                <!-- Android QQ区 -->
+                <div class="platform-card">
+                    <div class="platform-name">📱 Android QQ</div>
+                    <div class="power-item">
+                        <div class="power-label">国服最低战力<span class="region">全服</span></div>
+                        <div class="power-value">{{aqq_guobiao}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">省标最低战力<span class="region">{{aqq_province}}</span></div>
+                        <div class="power-value">{{aqq_provincePower}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">市标最低战力<span class="region">{{aqq_city}}</span></div>
+                        <div class="power-value">{{aqq_cityPower}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">区标最低战力<span class="region">{{aqq_area}}</span></div>
+                        <div class="power-value">{{aqq_areaPower}}</div>
+                    </div>
+                </div>
+                <!-- Android 微信区 -->
+                <div class="platform-card">
+                    <div class="platform-name">📱 Android 微信</div>
+                    <div class="power-item">
+                        <div class="power-label">国服最低战力<span class="region">全服</span></div>
+                        <div class="power-value">{{awx_guobiao}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">省标最低战力<span class="region">{{awx_province}}</span></div>
+                        <div class="power-value">{{awx_provincePower}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">市标最低战力<span class="region">{{awx_city}}</span></div>
+                        <div class="power-value">{{awx_cityPower}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">区标最低战力<span class="region">{{awx_area}}</span></div>
+                        <div class="power-value">{{awx_areaPower}}</div>
+                    </div>
+                </div>
+                <!-- iOS QQ区 -->
+                <div class="platform-card">
+                    <div class="platform-name">🍎 iOS QQ</div>
+                    <div class="power-item">
+                        <div class="power-label">国服最低战力<span class="region">全服</span></div>
+                        <div class="power-value">{{iqq_guobiao}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">省标最低战力<span class="region">{{iqq_province}}</span></div>
+                        <div class="power-value">{{iqq_provincePower}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">市标最低战力<span class="region">{{iqq_city}}</span></div>
+                        <div class="power-value">{{iqq_cityPower}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">区标最低战力<span class="region">{{iqq_area}}</span></div>
+                        <div class="power-value">{{iqq_areaPower}}</div>
+                    </div>
+                </div>
+                <!-- iOS 微信区 -->
+                <div class="platform-card">
+                    <div class="platform-name">🍎 iOS 微信</div>
+                    <div class="power-item">
+                        <div class="power-label">国服最低战力<span class="region">全服</span></div>
+                        <div class="power-value">{{iwx_guobiao}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">省标最低战力<span class="region">{{iwx_province}}</span></div>
+                        <div class="power-value">{{iwx_provincePower}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">市标最低战力<span class="region">{{iwx_city}}</span></div>
+                        <div class="power-value">{{iwx_cityPower}}</div>
+                    </div>
+                    <div class="power-item">
+                        <div class="power-label">区标最低战力<span class="region">{{iwx_area}}</span></div>
+                        <div class="power-value">{{iwx_areaPower}}</div>
+                    </div>
+                </div>
             </div>
             <div class="footer">
                 查询时间：{{current_time}} | 数据来源：王者荣耀官方
@@ -1359,45 +1454,21 @@ class Main(Star):
 
     @filter.command("战力查询")
     async def hero_power(self, message: AstrMessageEvent):
-        """王者英雄战力查询，支持双区双系统"""
+        """王者英雄战力查询，显示四个战区数据"""
         msg = message.message_str.replace("战力查询", "").strip()
         
         if not msg:
-            yield message.plain_result("缺少参数，正确示例：\n\n战力查询 安卓qq 小乔\n战力查询 苹果微信 李白").use_t2i(False)
+            yield message.plain_result("缺少参数，正确示例：\n\n战力查询 小乔").use_t2i(False)
             return
         
-        # 解析区服类型和英雄名
-        parts = msg.split()
-        if len(parts) < 2:
-            yield message.plain_result("参数格式错误，请输入区服类型和英雄名\n\n正确示例：\n战力查询 安卓qq 小乔\n战力查询 苹果微信 李白").use_t2i(False)
-            return
-        
-        # 区服类型映射关系
-        server_type_map = {
-            "安卓qq": "aqq",
-            "安卓微信": "awx",
-            "苹果qq": "iqq",
-            "苹果微信": "iwx"
-        }
-        
-        # 提取区服类型和英雄名
-        server_type_input = parts[0]
-        hero_name = " ".join(parts[1:])
-        
-        # 验证区服类型
-        if server_type_input not in server_type_map:
-            yield message.plain_result(f"区服类型错误，请输入以下区服类型之一：\n{', '.join(server_type_map.keys())}\n\n正确示例：\n战力查询 安卓qq 小乔").use_t2i(False)
-            return
-        
-        # 获取API使用的区服类型
-        api_server_type = server_type_map[server_type_input]
-        api_url = "https://www.sapi.run/hero/select.php"
+        hero_name = msg.strip()
+        api_url = "https://api.jkyai.top/API/wzzlcx.php"
         
         try:
-            # 构造请求参数
+            # 构造请求参数（注意API文档中的参数名是hero，但示例中写的是hreo，这里使用正确的hero）
             params = {
                 "hero": hero_name,
-                "type": api_server_type
+                "type": "json"
             }
             
             timeout = aiohttp.ClientTimeout(total=30)
@@ -1412,7 +1483,7 @@ class Main(Star):
                     result = json.loads(raw_content)
                     
                     if result.get("code") != 200:
-                        yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                        yield message.plain_result(f"查询失败：{result.get('message', '未知错误')}").use_t2i(False)
                         return
                     
                     data = result.get("data", {})
@@ -1420,20 +1491,53 @@ class Main(Star):
                         yield message.plain_result("未查询到该英雄的战力信息").use_t2i(False)
                         return
                     
+                    hero_data = data.get("hero_data", {})
+                    platforms = data.get("platforms", {})
+                    
                     # 获取当前时间，用于显示在图片中
                     current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     
-                    # 准备模板数据
+                    # 准备模板数据，包含四个战区的战力信息
                     template_data = {
-                        "hero_name": data.get('name', hero_name),
-                        "guobiao": data.get('guobiao', '0'),
-                        "province": data.get('province', '未知省'),
-                        "provincePower": data.get('provincePower', '0'),
-                        "city": data.get('city', '未知市'),
-                        "cityPower": data.get('cityPower', '0'),
-                        "area": data.get('area', '未知区'),
-                        "areaPower": data.get('areaPower', '0'),
-                        "current_time": current_time
+                        "hero_name": hero_data.get('name', hero_name),
+                        "updatetime": hero_data.get('updatetime', current_time),
+                        "current_time": current_time,
+                        
+                        # Android QQ区数据
+                        "aqq_guobiao": platforms.get('aqq', {}).get('guobiao', '0'),
+                        "aqq_province": platforms.get('aqq', {}).get('province', '未知省'),
+                        "aqq_provincePower": platforms.get('aqq', {}).get('provincePower', '0'),
+                        "aqq_city": platforms.get('aqq', {}).get('city', '未知市'),
+                        "aqq_cityPower": platforms.get('aqq', {}).get('cityPower', '0'),
+                        "aqq_area": platforms.get('aqq', {}).get('area', '未知区'),
+                        "aqq_areaPower": platforms.get('aqq', {}).get('areaPower', '0'),
+                        
+                        # Android 微信区数据
+                        "awx_guobiao": platforms.get('awx', {}).get('guobiao', '0'),
+                        "awx_province": platforms.get('awx', {}).get('province', '未知省'),
+                        "awx_provincePower": platforms.get('awx', {}).get('provincePower', '0'),
+                        "awx_city": platforms.get('awx', {}).get('city', '未知市'),
+                        "awx_cityPower": platforms.get('awx', {}).get('cityPower', '0'),
+                        "awx_area": platforms.get('awx', {}).get('area', '未知区'),
+                        "awx_areaPower": platforms.get('awx', {}).get('areaPower', '0'),
+                        
+                        # iOS QQ区数据
+                        "iqq_guobiao": platforms.get('iqq', {}).get('guobiao', '0'),
+                        "iqq_province": platforms.get('iqq', {}).get('province', '未知省'),
+                        "iqq_provincePower": platforms.get('iqq', {}).get('provincePower', '0'),
+                        "iqq_city": platforms.get('iqq', {}).get('city', '未知市'),
+                        "iqq_cityPower": platforms.get('iqq', {}).get('cityPower', '0'),
+                        "iqq_area": platforms.get('iqq', {}).get('area', '未知区'),
+                        "iqq_areaPower": platforms.get('iqq', {}).get('areaPower', '0'),
+                        
+                        # iOS 微信区数据
+                        "iwx_guobiao": platforms.get('iwx', {}).get('guobiao', '0'),
+                        "iwx_province": platforms.get('iwx', {}).get('province', '未知省'),
+                        "iwx_provincePower": platforms.get('iwx', {}).get('provincePower', '0'),
+                        "iwx_city": platforms.get('iwx', {}).get('city', '未知市'),
+                        "iwx_cityPower": platforms.get('iwx', {}).get('cityPower', '0'),
+                        "iwx_area": platforms.get('iwx', {}).get('area', '未知区'),
+                        "iwx_areaPower": platforms.get('iwx', {}).get('areaPower', '0')
                     }
                     
                     # 渲染HTML模板
@@ -2138,14 +2242,20 @@ class Main(Star):
             yield message.plain_result(f"请求星座运势时发生错误：{str(e)}").use_t2i(False)
             return
 
-    @filter.command("/加密")
+    @filter.command("加密")
     async def shouyu_encrypt(self, message: AstrMessageEvent):
         """兽语在线加密功能"""
         # 提取加密内容参数
-        msg = message.message_str.replace("/加密", "").strip()
+        # 支持多种格式："加密 内容" 和 "/加密 内容" 以及被@的情况
+        msg = message.message_str
+        # 移除命令前缀（支持带斜杠和不带斜杠）
+        msg = msg.replace("加密", "").replace("/加密", "").strip()
+        # 移除@机器人的部分
+        import re
+        msg = re.sub(r'\[At:\d+\]', '', msg).strip()
         
         if not msg:
-            yield message.plain_result("正确指令：/加密 <内容>\n\n示例：/加密 121").use_t2i(False)
+            yield message.plain_result("正确指令：加密 <内容>\n\n示例：加密 121").use_t2i(False)
             return
         
         encrypt_content = msg.strip()
@@ -2202,14 +2312,20 @@ class Main(Star):
             yield message.plain_result(f"请求加密时发生错误：{str(e)}").use_t2i(False)
             return
     
-    @filter.command("/解密")
+    @filter.command("解密")
     async def shouyu_decrypt(self, message: AstrMessageEvent):
         """兽语在线解密功能"""
         # 提取解密内容参数
-        msg = message.message_str.replace("/解密", "").strip()
+        # 支持多种格式："解密 内容" 和 "/解密 内容" 以及被@的情况
+        msg = message.message_str
+        # 移除命令前缀（支持带斜杠和不带斜杠）
+        msg = msg.replace("解密", "").replace("/解密", "").strip()
+        # 移除@机器人的部分
+        import re
+        msg = re.sub(r'\[At:\d+\]', '', msg).strip()
         
         if not msg:
-            yield message.plain_result("正确指令：/解密 <内容>\n\n示例：/解密 嗷～嗷啊").use_t2i(False)
+            yield message.plain_result("正确指令：解密 <内容>\n\n示例：解密 嗷～嗷啊").use_t2i(False)
             return
         
         decrypt_content = msg.strip()
@@ -2275,7 +2391,7 @@ class Main(Star):
 📅 早安 / 晚安 - 记录睡眠时间，计算睡眠时长
 
 【游戏相关】
-🎮 战力查询 <英雄名> - 查询王者荣耀英雄战力
+🎮 战力查询 <安卓qq/安卓微信/苹果qq/苹果微信> <英雄名> - 查询王者荣耀英雄战力
 🌍 mc服务器 <服务器地址> - 查询Minecraft服务器状态
 
 【生活服务】
@@ -2291,15 +2407,15 @@ class Main(Star):
 
 【娱乐功能】
 ✨ 星座运势 <星座名> - 查询星座运势图片
-🔒 /加密 <内容> - 兽语在线加密
-🔓 /解密 <内容> - 兽语在线解密
+🔒 加密 <内容> - 兽语在线加密
+🔓 解密 <内容> - 兽语在线解密
 
 📌 使用示例：
-战力查询 小乔
+战力查询 安卓qq 小乔
 路线查询 广州 深圳
 绘画 一只可爱的猫
-/加密 121
-/解密 嗷～嗷啊
+加密 121
+解密 嗷～嗷啊
 
 💡 所有命令支持群聊和私聊使用"""
         
