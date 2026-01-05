@@ -272,6 +272,302 @@ class Main(Star):
     </html>
     '''
     
+    # 路线查询结果的HTML模板
+    ROUTE_QUERY_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>城际路线查询</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                margin: 0;
+                padding: 30px;
+                line-height: 1.6;
+                color: #333;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 15px;
+                padding: 40px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            }
+            .title {
+                font-size: 28px;
+                font-weight: bold;
+                text-align: center;
+                color: #3498db;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .route-header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background-color: #e3f2fd;
+                border-radius: 10px;
+            }
+            .route-title {
+                font-size: 32px;
+                font-weight: bold;
+                color: #1976d2;
+                margin-bottom: 10px;
+            }
+            .route-desc {
+                font-size: 16px;
+                color: #666;
+            }
+            .info-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                margin: 30px 0;
+            }
+            .info-item {
+                background-color: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .info-label {
+                font-size: 14px;
+                color: #7f8c8d;
+                margin-bottom: 5px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .info-value {
+                font-size: 22px;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+            .route-info {
+                margin-top: 20px;
+                padding: 20px;
+                background-color: #e8f5e8;
+                border-radius: 8px;
+                border-left: 5px solid #4caf50;
+            }
+            .route-info-label {
+                font-size: 16px;
+                font-weight: bold;
+                color: #2e7d32;
+                margin-bottom: 10px;
+            }
+            .route-info-content {
+                font-size: 18px;
+                color: #388e3c;
+            }
+            .road-conditions {
+                margin-top: 20px;
+                padding: 15px;
+                background-color: #fff3cd;
+                border: 1px solid #ffeeba;
+                border-radius: 6px;
+                color: #856404;
+            }
+            .footer {
+                margin-top: 30px;
+                text-align: center;
+                color: #95a5a6;
+                font-size: 14px;
+                padding-top: 20px;
+                border-top: 1px solid #ecf0f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">🗺️ 城际路线查询 🗺️</h1>
+            <div class="route-header">
+                <div class="route-title">{{from_city}} → {{to_city}}</div>
+                <div class="route-desc">为您提供详细的城际出行信息</div>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">总距离</div>
+                    <div class="info-value">{{distance}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">总耗时</div>
+                    <div class="info-value">{{time}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">油费</div>
+                    <div class="info-value">{{fuelcosts}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">过桥费</div>
+                    <div class="info-value">{{bridgetoll}}</div>
+                </div>
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <div class="info-label">总费用</div>
+                    <div class="info-value">{{totalcost}}</div>
+                </div>
+            </div>
+            <div class="route-info">
+                <div class="route-info-label">推荐路线</div>
+                <div class="route-info-content">{{corese}}</div>
+            </div>
+            <div class="road-conditions">
+                <strong>路况信息：</strong>{{roadconditions}}
+            </div>
+            <div class="footer">
+                查询时间：{{current_time}} | 数据来源：专业地图服务
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
+    # Minecraft服务器查询结果的HTML模板
+    MC_SERVER_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Minecraft服务器状态</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+                margin: 0;
+                padding: 30px;
+                line-height: 1.6;
+                color: #333;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 15px;
+                padding: 40px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            }
+            .title {
+                font-size: 28px;
+                font-weight: bold;
+                text-align: center;
+                color: #2196f3;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .server-header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background-color: #e3f2fd;
+                border-radius: 10px;
+            }
+            .server-title {
+                font-size: 32px;
+                font-weight: bold;
+                color: #1976d2;
+                margin-bottom: 10px;
+            }
+            .server-desc {
+                font-size: 16px;
+                color: #666;
+            }
+            .status-indicator {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .status-badge {
+                display: inline-block;
+                padding: 10px 20px;
+                border-radius: 25px;
+                font-size: 20px;
+                font-weight: bold;
+            }
+            .status-online {
+                background-color: #4caf50;
+                color: white;
+            }
+            .status-offline {
+                background-color: #f44336;
+                color: white;
+            }
+            .info-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                margin: 30px 0;
+            }
+            .info-item {
+                background-color: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .info-label {
+                font-size: 14px;
+                color: #7f8c8d;
+                margin-bottom: 5px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .info-value {
+                font-size: 22px;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+            .footer {
+                margin-top: 30px;
+                text-align: center;
+                color: #95a5a6;
+                font-size: 14px;
+                padding-top: 20px;
+                border-top: 1px solid #ecf0f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">🎮 Minecraft服务器状态 🎮</h1>
+            <div class="server-header">
+                <div class="server-title">{{server_addr}}</div>
+                <div class="server-desc">Minecraft服务器详细状态信息</div>
+            </div>
+            <div class="status-indicator">
+                <div class="status-badge status-{{online_status}}">{{online_text}}</div>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">IP地址</div>
+                    <div class="info-value">{{ip}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">端口</div>
+                    <div class="info-value">{{port}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">当前玩家</div>
+                    <div class="info-value">{{players}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">最大玩家</div>
+                    <div class="info-value">{{max_players}}</div>
+                </div>
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <div class="info-label">服务器版本</div>
+                    <div class="info-value">{{version}}</div>
+                </div>
+            </div>
+            <div class="footer">
+                查询时间：{{current_time}} | 数据来源：专业游戏服务器监控服务
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
     async def text_to_image_menu_style(self, text: str) -> str:
         """使用菜单样式的HTML模板生成图片"""
         try:
@@ -596,17 +892,45 @@ class Main(Star):
                         yield message.plain_result("未查询到该路线的信息").use_t2i(False)
                         return
                     
-                    # 格式化输出结果
-                    response = f"{result.get('from', from_city)} -> {result.get('to', to_city)}\n"
-                    response += f"路线：{data.get('corese', '')}\n"
-                    response += f"总距离：{data.get('distance', '0')}\n"
-                    response += f"总耗时：{data.get('time', '0')}\n"
-                    response += f"油费：{data.get('fuelcosts', '0')}\n"
-                    response += f"过桥费：{data.get('bridgetoll', '0')}\n"
-                    response += f"总费用：{data.get('totalcost', '0')}\n"
-                    response += f"路况：{data.get('roadconditions', '暂无数据')}"
+                    # 获取当前时间，用于显示在图片中
+                    current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     
-                    yield message.plain_result(response).use_t2i(False)
+                    # 准备模板数据
+                    template_data = {
+                        "from_city": result.get('from', from_city),
+                        "to_city": result.get('to', to_city),
+                        "corese": data.get('corese', ''),
+                        "distance": data.get('distance', '0'),
+                        "time": data.get('time', '0'),
+                        "fuelcosts": data.get('fuelcosts', '0'),
+                        "bridgetoll": data.get('bridgetoll', '0'),
+                        "totalcost": data.get('totalcost', '0'),
+                        "roadconditions": data.get('roadconditions', '暂无数据'),
+                        "current_time": current_time
+                    }
+                    
+                    # 渲染HTML模板
+                    html_content = self.ROUTE_QUERY_TEMPLATE
+                    for key, value in template_data.items():
+                        placeholder = "{{" + key + "}}"
+                        html_content = html_content.replace(placeholder, str(value))
+                    
+                    # 使用html_render函数生成图片
+                    options = {
+                        "full_page": True,
+                        "type": "jpeg",
+                        "quality": 95,
+                    }
+                    
+                    image_url = await self.html_render(
+                        html_content,  # 渲染后的HTML内容
+                        {},  # 空数据字典
+                        True,  # 返回URL
+                        options  # 图片生成选项
+                    )
+                    
+                    # 返回图片结果
+                    yield message.image_result(image_url).use_t2i(False)
                     return
                         
         except aiohttp.ClientError as e:
@@ -740,17 +1064,48 @@ class Main(Star):
                         yield message.plain_result(f"查询失败：{data.get('message', '未知错误')}").use_t2i(False)
                         return
                     
-                    # 格式化输出结果
-                    online_status = "是" if data.get('online') else "否"
-                    response = f"查询【{server_addr}】成功！\n"
-                    response += f"是否在线：{online_status}\n"
-                    response += f"ip:{data.get('ip', '未知')}\n"
-                    response += f"端口：{data.get('port', 25565)}\n"
-                    response += f"玩家数：{data.get('players', 0)}\n"
-                    response += f"最大玩家数：{data.get('max_players', 0)}\n"
-                    response += f"版本：{data.get('version', '未知')}"
+                    # 获取当前时间，用于显示在图片中
+                    current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     
-                    yield message.plain_result(response).use_t2i(False)
+                    # 准备模板数据
+                    online = data.get('online', False)
+                    online_text = "在线" if online else "离线"
+                    online_status = "online" if online else "offline"
+                    
+                    template_data = {
+                        "server_addr": server_addr,
+                        "online_text": online_text,
+                        "online_status": online_status,
+                        "ip": data.get('ip', '未知'),
+                        "port": data.get('port', 25565),
+                        "players": data.get('players', 0),
+                        "max_players": data.get('max_players', 0),
+                        "version": data.get('version', '未知'),
+                        "current_time": current_time
+                    }
+                    
+                    # 渲染HTML模板
+                    html_content = self.MC_SERVER_TEMPLATE
+                    for key, value in template_data.items():
+                        placeholder = "{{" + key + "}}"
+                        html_content = html_content.replace(placeholder, str(value))
+                    
+                    # 使用html_render函数生成图片
+                    options = {
+                        "full_page": True,
+                        "type": "jpeg",
+                        "quality": 95,
+                    }
+                    
+                    image_url = await self.html_render(
+                        html_content,  # 渲染后的HTML内容
+                        {},  # 空数据字典
+                        True,  # 返回URL
+                        options  # 图片生成选项
+                    )
+                    
+                    # 返回图片结果
+                    yield message.image_result(image_url).use_t2i(False)
                     return
                         
         except aiohttp.ClientError as e:
