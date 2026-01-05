@@ -2401,7 +2401,7 @@ class Main(Star):
                     
                     # AI审核步骤
                     ai_api_url = "https://api.jkyai.top/API/depsek3.2.php"
-                    ai_system_prompt = "你是一个专业的合规内容审核助手，请严格检测以下文本中是否包含违规内容。\n\n违规词范围包括但不限于：\n\n暴力、血腥、恐怖内容\n\n仇恨、歧视、人身攻击言论\n\n违法、违禁品或行为引导\n\n政治敏感、不当言论\n\n色情、低俗、性暗示内容\n\n虚假信息、不实谣言\n\n诈骗、广告、恶意推广\n\n泄露隐私、他人信息\n\n链接一概不允许\n\n其他违反公序良俗的内容\n\n请按以下步骤处理：\n\n逐句或分段分析文本内容；\n\n如发现疑似违规词或内容则输出：false\n\n如果内容安全则输出：true"
+                    ai_system_prompt = "你是一个专业的合规内容审核助手，请严格检测以下文本中是否包含违规内容。\n\n违规词范围包括但不限于：\n\n暴力、血腥、恐怖内容\n\n仇恨、歧视、人身攻击言论\n\n违法、违禁品或行为引导\n\n政治敏感、不当言论\n\n色情、低俗、性暗示内容\n\n虚假信息、不实谣言\n\n诈骗、广告、恶意推广\n\n泄露隐私、他人信息\n\n链接一概不允许\n\n其他违反公序良俗的内容\n\n请按以下步骤处理：\n\n1. 逐句或分段分析文本内容；\n2. 如发现疑似违规词或内容则输出：false\n3. 如果内容安全则输出：true\n4. 并且给出拦截原因，比如如果是链接就输出：包含链接！！\n   如果是骂人则输出：不当言论！！\n   如果是骂人和链接一起就输出：包含链接和不当言论！！\n5. 并且按照恶劣程度给出违规分数，1-10分\n\n输出格式要求：\n<安全状态>\n<拦截原因（如果安全则为空）>\n<违规分数（如果安全则为0）>\n\n例如：\nfalse\n不当言论！！\n8\n\n或：\ntrue\n\n0"
                     
                     ai_question = f"{ai_system_prompt}\n\n需要审核的文本：\n{decrypted_text}"
                     
@@ -2420,20 +2420,58 @@ class Main(Star):
                                 return
                             
                             ai_result = await ai_resp.text()
-                            ai_result = ai_result.strip().lower()
+                            ai_result = ai_result.strip()
                             
-                            # 检查AI审核结果
-                            if ai_result == "false":
-                                # 内容违规，返回违规提示
-                                yield message.plain_result("您提供的密文解析后遭到QQ安全中心检测系统拦截，不予放行!!!").use_t2i(False)
-                                return
-                            elif ai_result == "true":
-                                # 内容安全，返回解密结果
-                                yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
-                                return
-                            else:
-                                # AI返回格式异常，仍返回解密结果
-                                logger.warning(f"AI审核结果格式异常：{ai_result}")
+                            # 解析AI结果
+                            try:
+                                ai_lines = ai_result.split('\n')
+                                if len(ai_lines) < 1:
+                                    # 结果格式异常，仍返回解密结果
+                                    logger.warning(f"AI审核结果格式异常：{ai_result}")
+                                    yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                                    return
+                                
+                                # 提取安全状态
+                                safety_status = ai_lines[0].strip().lower()
+                                
+                                # 提取拦截原因（如果存在）
+                                intercept_reason = ""
+                                if len(ai_lines) > 1:
+                                    intercept_reason = ai_lines[1].strip()
+                                
+                                # 提取违规分数（如果存在）
+                                violation_score = 0
+                                if len(ai_lines) > 2:
+                                    try:
+                                        violation_score = int(ai_lines[2].strip())
+                                    except ValueError:
+                                        violation_score = 0
+                                
+                                # 检查AI审核结果
+                                if safety_status == "false":
+                                    # 内容违规，返回违规提示
+                                    if intercept_reason:
+                                        response = f"您提供的密文解析后遭到QQ安全中心检测系统拦截，不予放行!!!\n\n违规内容含：{intercept_reason}"
+                                    else:
+                                        response = "您提供的密文解析后遭到QQ安全中心检测系统拦截，不予放行!!!"
+                                    
+                                    # 记录违规分数到日志
+                                    logger.warning(f"解密内容违规，原因：{intercept_reason}，违规分数：{violation_score}")
+                                    
+                                    yield message.plain_result(response).use_t2i(False)
+                                    return
+                                elif safety_status == "true":
+                                    # 内容安全，返回解密结果
+                                    yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                                    return
+                                else:
+                                    # 结果格式异常，仍返回解密结果
+                                    logger.warning(f"AI审核结果格式异常：{ai_result}")
+                                    yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                                    return
+                            except Exception as parse_e:
+                                # 解析AI结果失败，仍返回解密结果
+                                logger.error(f"解析AI审核结果时发生错误：{parse_e}")
                                 yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
                                 return
                     except Exception as ai_e:
