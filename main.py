@@ -1052,16 +1052,20 @@ class Main(Star):
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(api_url, params=params) as resp:
                     if resp.status != 200:
-                        raw_content = await resp.text()
-                        result = json.loads(raw_content)
-                        yield message.plain_result(f"查询失败：{result.get('message', '未知错误')}").use_t2i(False)
+                        try:
+                            raw_content = await resp.text()
+                            result = json.loads(raw_content)
+                            yield message.plain_result(f"查询失败：{result.get('message', '未知错误')}").use_t2i(False)
+                        except json.JSONDecodeError:
+                            yield message.plain_result(f"查询失败：服务器返回错误状态码 {resp.status}").use_t2i(False)
                         return
                     
                     raw_content = await resp.text()
                     data = json.loads(raw_content)
                     
-                    if data.get('code') != 200:
-                        yield message.plain_result(f"查询失败：{data.get('message', '未知错误')}").use_t2i(False)
+                    # 检查响应是否包含online字段，这是API返回的主要字段
+                    if 'online' not in data:
+                        yield message.plain_result(f"查询失败：服务器返回格式异常").use_t2i(False)
                         return
                     
                     # 获取当前时间，用于显示在图片中
