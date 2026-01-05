@@ -165,6 +165,113 @@ class Main(Star):
     </html>
     '''
     
+    # 战力查询结果的HTML模板
+    HERO_POWER_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>王者荣耀战力查询</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                margin: 0;
+                padding: 30px;
+                line-height: 1.6;
+                color: #333;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 15px;
+                padding: 40px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            }
+            .title {
+                font-size: 28px;
+                font-weight: bold;
+                text-align: center;
+                color: #e74c3c;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .hero-name {
+                font-size: 36px;
+                font-weight: bold;
+                text-align: center;
+                color: #3498db;
+                margin-bottom: 30px;
+                padding: 15px;
+                background-color: #ecf0f1;
+                border-radius: 10px;
+            }
+            .power-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background-color: #f8f9fa;
+                padding: 15px 20px;
+                margin: 15px 0;
+                border-radius: 8px;
+                border-left: 5px solid #3498db;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .power-label {
+                font-size: 18px;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+            .power-value {
+                font-size: 22px;
+                font-weight: bold;
+                color: #e67e22;
+            }
+            .region {
+                font-size: 14px;
+                color: #7f8c8d;
+                margin-left: 10px;
+            }
+            .footer {
+                margin-top: 30px;
+                text-align: center;
+                color: #95a5a6;
+                font-size: 14px;
+                padding-top: 20px;
+                border-top: 1px solid #ecf0f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">🏆 王者荣耀战力查询 🏆</h1>
+            <div class="hero-name">{{hero_name}}</div>
+            <div class="power-item">
+                <div class="power-label">国服最低战力<span class="region">全服</span></div>
+                <div class="power-value">{{guobiao}}</div>
+            </div>
+            <div class="power-item">
+                <div class="power-label">省标最低战力<span class="region">{{province}}</span></div>
+                <div class="power-value">{{provincePower}}</div>
+            </div>
+            <div class="power-item">
+                <div class="power-label">市标最低战力<span class="region">{{city}}</span></div>
+                <div class="power-value">{{cityPower}}</div>
+            </div>
+            <div class="power-item">
+                <div class="power-label">区标最低战力<span class="region">{{area}}</span></div>
+                <div class="power-value">{{areaPower}}</div>
+            </div>
+            <div class="footer">
+                查询时间：{{current_time}} | 数据来源：王者荣耀官方
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
     async def text_to_image_menu_style(self, text: str) -> str:
         """使用菜单样式的HTML模板生成图片"""
         try:
@@ -385,14 +492,44 @@ class Main(Star):
                         yield message.plain_result("未查询到该英雄的战力信息").use_t2i(False)
                         return
                     
-                    # 格式化输出结果
-                    response = f"{data.get('name', hero_name)}\n"
-                    response += f"国服最低：{data.get('guobiao', '0')}\n"
-                    response += f"【{data.get('province', '未知省')}】省标最低：{data.get('provincePower', '0')}\n"
-                    response += f"【{data.get('city', '未知市')}】市标最低：{data.get('cityPower', '0')}\n"
-                    response += f"【{data.get('area', '未知区')}】区标最低：{data.get('areaPower', '0')}"
+                    # 获取当前时间，用于显示在图片中
+                    current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     
-                    yield message.plain_result(response).use_t2i(False)
+                    # 准备模板数据
+                    template_data = {
+                        "hero_name": data.get('name', hero_name),
+                        "guobiao": data.get('guobiao', '0'),
+                        "province": data.get('province', '未知省'),
+                        "provincePower": data.get('provincePower', '0'),
+                        "city": data.get('city', '未知市'),
+                        "cityPower": data.get('cityPower', '0'),
+                        "area": data.get('area', '未知区'),
+                        "areaPower": data.get('areaPower', '0'),
+                        "current_time": current_time
+                    }
+                    
+                    # 渲染HTML模板
+                    html_content = self.HERO_POWER_TEMPLATE
+                    for key, value in template_data.items():
+                        placeholder = "{{" + key + "}}"
+                        html_content = html_content.replace(placeholder, str(value))
+                    
+                    # 使用html_render函数生成图片
+                    options = {
+                        "full_page": True,
+                        "type": "jpeg",
+                        "quality": 95,
+                    }
+                    
+                    image_url = await self.html_render(
+                        html_content,  # 渲染后的HTML内容
+                        {},  # 空数据字典
+                        True,  # 返回URL
+                        options  # 图片生成选项
+                    )
+                    
+                    # 返回图片结果
+                    yield message.image_result(image_url).use_t2i(False)
                     return
                         
         except aiohttp.ClientError as e:
