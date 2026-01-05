@@ -1514,6 +1514,27 @@ class Main(Star):
                     # 获取当前时间，用于显示在图片中
                     current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     
+                    # 增强数据处理，确保每个平台都有完整的数据
+                    # 定义默认平台数据
+                    default_platform_data = {
+                        "province": "未知省",
+                        "provincePower": "0",
+                        "city": "未知市",
+                        "cityPower": "0",
+                        "area": "未知区",
+                        "areaPower": "0",
+                        "guobiao": "0"
+                    }
+                    
+                    # 确保每个平台都有数据
+                    aqq_data = {**default_platform_data, **platforms.get('aqq', {})}
+                    awx_data = {**default_platform_data, **platforms.get('awx', {})}
+                    iqq_data = {**default_platform_data, **platforms.get('iqq', {})}
+                    iwx_data = {**default_platform_data, **platforms.get('iwx', {})}
+                    
+                    # 添加日志记录，便于调试
+                    logger.info(f"战力查询数据 - 英雄: {hero_name}, 平台数据: {platforms.keys()}")
+                    
                     # 准备模板数据，包含四个战区的战力信息
                     template_data = {
                         "hero_name": hero_data.get('name', hero_name),
@@ -1521,40 +1542,40 @@ class Main(Star):
                         "current_time": current_time,
                         
                         # Android QQ区数据
-                        "aqq_guobiao": platforms.get('aqq', {}).get('guobiao', '0'),
-                        "aqq_province": platforms.get('aqq', {}).get('province', '未知省'),
-                        "aqq_provincePower": platforms.get('aqq', {}).get('provincePower', '0'),
-                        "aqq_city": platforms.get('aqq', {}).get('city', '未知市'),
-                        "aqq_cityPower": platforms.get('aqq', {}).get('cityPower', '0'),
-                        "aqq_area": platforms.get('aqq', {}).get('area', '未知区'),
-                        "aqq_areaPower": platforms.get('aqq', {}).get('areaPower', '0'),
+                        "aqq_guobiao": aqq_data.get('guobiao', '0'),
+                        "aqq_province": aqq_data.get('province', '未知省'),
+                        "aqq_provincePower": aqq_data.get('provincePower', '0'),
+                        "aqq_city": aqq_data.get('city', '未知市'),
+                        "aqq_cityPower": aqq_data.get('cityPower', '0'),
+                        "aqq_area": aqq_data.get('area', '未知区'),
+                        "aqq_areaPower": aqq_data.get('areaPower', '0'),
                         
                         # Android 微信区数据
-                        "awx_guobiao": platforms.get('awx', {}).get('guobiao', '0'),
-                        "awx_province": platforms.get('awx', {}).get('province', '未知省'),
-                        "awx_provincePower": platforms.get('awx', {}).get('provincePower', '0'),
-                        "awx_city": platforms.get('awx', {}).get('city', '未知市'),
-                        "awx_cityPower": platforms.get('awx', {}).get('cityPower', '0'),
-                        "awx_area": platforms.get('awx', {}).get('area', '未知区'),
-                        "awx_areaPower": platforms.get('awx', {}).get('areaPower', '0'),
+                        "awx_guobiao": awx_data.get('guobiao', '0'),
+                        "awx_province": awx_data.get('province', '未知省'),
+                        "awx_provincePower": awx_data.get('provincePower', '0'),
+                        "awx_city": awx_data.get('city', '未知市'),
+                        "awx_cityPower": awx_data.get('cityPower', '0'),
+                        "awx_area": awx_data.get('area', '未知区'),
+                        "awx_areaPower": awx_data.get('areaPower', '0'),
                         
                         # iOS QQ区数据
-                        "iqq_guobiao": platforms.get('iqq', {}).get('guobiao', '0'),
-                        "iqq_province": platforms.get('iqq', {}).get('province', '未知省'),
-                        "iqq_provincePower": platforms.get('iqq', {}).get('provincePower', '0'),
-                        "iqq_city": platforms.get('iqq', {}).get('city', '未知市'),
-                        "iqq_cityPower": platforms.get('iqq', {}).get('cityPower', '0'),
-                        "iqq_area": platforms.get('iqq', {}).get('area', '未知区'),
-                        "iqq_areaPower": platforms.get('iqq', {}).get('areaPower', '0'),
+                        "iqq_guobiao": iqq_data.get('guobiao', '0'),
+                        "iqq_province": iqq_data.get('province', '未知省'),
+                        "iqq_provincePower": iqq_data.get('provincePower', '0'),
+                        "iqq_city": iqq_data.get('city', '未知市'),
+                        "iqq_cityPower": iqq_data.get('cityPower', '0'),
+                        "iqq_area": iqq_data.get('area', '未知区'),
+                        "iqq_areaPower": iqq_data.get('areaPower', '0'),
                         
                         # iOS 微信区数据
-                        "iwx_guobiao": platforms.get('iwx', {}).get('guobiao', '0'),
-                        "iwx_province": platforms.get('iwx', {}).get('province', '未知省'),
-                        "iwx_provincePower": platforms.get('iwx', {}).get('provincePower', '0'),
-                        "iwx_city": platforms.get('iwx', {}).get('city', '未知市'),
-                        "iwx_cityPower": platforms.get('iwx', {}).get('cityPower', '0'),
-                        "iwx_area": platforms.get('iwx', {}).get('area', '未知区'),
-                        "iwx_areaPower": platforms.get('iwx', {}).get('areaPower', '0')
+                        "iwx_guobiao": iwx_data.get('guobiao', '0'),
+                        "iwx_province": iwx_data.get('province', '未知省'),
+                        "iwx_provincePower": iwx_data.get('provincePower', '0'),
+                        "iwx_city": iwx_data.get('city', '未知市'),
+                        "iwx_cityPower": iwx_data.get('cityPower', '0'),
+                        "iwx_area": iwx_data.get('area', '未知区'),
+                        "iwx_areaPower": iwx_data.get('areaPower', '0')
                     }
                     
                     # 渲染HTML模板
