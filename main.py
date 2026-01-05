@@ -568,6 +568,614 @@ class Main(Star):
     </html>
     '''
     
+    # 油价查询结果的HTML模板
+    OIL_PRICE_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>油价查询结果</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+                margin: 0;
+                padding: 30px;
+                line-height: 1.6;
+                color: #333;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 15px;
+                padding: 40px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            }
+            .title {
+                font-size: 28px;
+                font-weight: bold;
+                text-align: center;
+                color: #c0392b;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .city-header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background-color: #ffeaa7;
+                border-radius: 10px;
+            }
+            .city-name {
+                font-size: 32px;
+                font-weight: bold;
+                color: #d35400;
+                margin-bottom: 10px;
+            }
+            .city-desc {
+                font-size: 16px;
+                color: #666;
+            }
+            .trend-info {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 15px;
+                background-color: #e8f5e8;
+                border-radius: 8px;
+                border-left: 5px solid #4caf50;
+            }
+            .trend-label {
+                font-size: 18px;
+                font-weight: bold;
+                color: #2e7d32;
+            }
+            .info-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                margin: 30px 0;
+            }
+            .info-item {
+                background-color: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .info-label {
+                font-size: 14px;
+                color: #7f8c8d;
+                margin-bottom: 5px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .info-value {
+                font-size: 22px;
+                font-weight: bold;
+                color: #e67e22;
+            }
+            .footer {
+                margin-top: 30px;
+                text-align: center;
+                color: #95a5a6;
+                font-size: 14px;
+                padding-top: 20px;
+                border-top: 1px solid #ecf0f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">⛽ 油价查询结果 ⛽</h1>
+            <div class="city-header">
+                <div class="city-name">{{city_name}}</div>
+                <div class="city-desc">最新油价信息</div>
+            </div>
+            <div class="trend-info">
+                <div class="trend-label">趋势：前{{trend}}</div>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">92号汽油</div>
+                    <div class="info-value">{{oil_92}}元/升</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">95号汽油</div>
+                    <div class="info-value">{{oil_95}}元/升</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">98号汽油</div>
+                    <div class="info-value">{{oil_98}}元/升</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">0号柴油</div>
+                    <div class="info-value">{{oil_0}}元/升</div>
+                </div>
+            </div>
+            <div class="footer">
+                查询时间：{{current_time}} | 数据来源：专业油价查询服务
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
+    # QQ估价结果的HTML模板
+    QQ_VALUATION_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>QQ估价结果</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                margin: 0;
+                padding: 30px;
+                line-height: 1.6;
+                color: #333;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 15px;
+                padding: 40px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            }
+            .title {
+                font-size: 28px;
+                font-weight: bold;
+                text-align: center;
+                color: #667eea;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .qq-header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background-color: #e8f5e8;
+                border-radius: 10px;
+            }
+            .qq-number {
+                font-size: 32px;
+                font-weight: bold;
+                color: #2e7d32;
+                margin-bottom: 10px;
+            }
+            .qq-desc {
+                font-size: 16px;
+                color: #666;
+            }
+            .valuation-info {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background-color: #fff3cd;
+                border-radius: 10px;
+                border: 2px solid #ffc107;
+            }
+            .valuation-label {
+                font-size: 18px;
+                color: #856404;
+                margin-bottom: 10px;
+            }
+            .valuation-value {
+                font-size: 48px;
+                font-weight: bold;
+                color: #d35400;
+            }
+            .info-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin: 30px 0;
+            }
+            .info-item {
+                background-color: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .info-label {
+                font-size: 14px;
+                color: #7f8c8d;
+                margin-bottom: 10px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .info-value {
+                font-size: 18px;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+            .footer {
+                margin-top: 30px;
+                text-align: center;
+                color: #95a5a6;
+                font-size: 14px;
+                padding-top: 20px;
+                border-top: 1px solid #ecf0f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">💰 QQ估价结果 💰</h1>
+            <div class="qq-header">
+                <div class="qq-number">{{qq_number}}</div>
+                <div class="qq-desc">QQ号码详细估价信息</div>
+            </div>
+            <div class="valuation-info">
+                <div class="valuation-label">评估价值</div>
+                <div class="valuation-value">{{valuation}}元</div>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">特点</div>
+                    <div class="info-value">{{law}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">数字特征</div>
+                    <div class="info-value">{{digit}}</div>
+                </div>
+            </div>
+            <div class="footer">
+                查询时间：{{current_time}} | 数据来源：专业QQ估价服务
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
+    # 星座运势结果的HTML模板
+    CONSTELLATION_FORTUNE_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>星座运势</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+                margin: 0;
+                padding: 30px;
+                line-height: 1.6;
+                color: #333;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 20px;
+                padding: 40px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            }
+            .title {
+                font-size: 36px;
+                font-weight: bold;
+                text-align: center;
+                color: #e74c3c;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background-color: #f8f9fa;
+                border-radius: 10px;
+            }
+            .constellation-name {
+                font-size: 42px;
+                font-weight: bold;
+                color: #3498db;
+                margin-bottom: 10px;
+            }
+            .constellation-info {
+                font-size: 18px;
+                color: #666;
+            }
+            .section {
+                margin: 30px 0;
+                padding: 25px;
+                background-color: #f8f9fa;
+                border-radius: 15px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .section-title {
+                font-size: 24px;
+                font-weight: bold;
+                color: #2c3e50;
+                margin-bottom: 15px;
+                border-bottom: 2px solid #3498db;
+                padding-bottom: 10px;
+            }
+            .info-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin: 20px 0;
+            }
+            .info-item {
+                background-color: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .info-label {
+                font-size: 14px;
+                color: #7f8c8d;
+                margin-bottom: 10px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .info-value {
+                font-size: 18px;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+            .fortune-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                margin: 20px 0;
+            }
+            .fortune-item {
+                background-color: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .fortune-label {
+                font-size: 16px;
+                font-weight: bold;
+                color: #3498db;
+                margin-bottom: 10px;
+            }
+            .fortune-value {
+                font-size: 18px;
+                color: #2c3e50;
+            }
+            .traits {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                margin: 20px 0;
+            }
+            .trait-item {
+                background-color: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .trait-label {
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .strengths {
+                color: #27ae60;
+            }
+            .weaknesses {
+                color: #e74c3c;
+            }
+            .matches {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                margin: 20px 0;
+            }
+            .match-item {
+                background-color: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .match-label {
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .best-match {
+                color: #d35400;
+            }
+            .good-match {
+                color: #27ae60;
+            }
+            .fair-match {
+                color: #f39c12;
+            }
+            .poor-match {
+                color: #e74c3c;
+            }
+            .lucky-info {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                margin: 20px 0;
+            }
+            .lucky-item {
+                background-color: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .lucky-label {
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .advice {
+                background-color: #e8f5e8;
+                padding: 20px;
+                border-radius: 10px;
+                border-left: 5px solid #4caf50;
+                margin: 20px 0;
+            }
+            .advice-label {
+                font-size: 18px;
+                font-weight: bold;
+                color: #2e7d32;
+                margin-bottom: 10px;
+            }
+            .advice-content {
+                font-size: 18px;
+                color: #388e3c;
+            }
+            .footer {
+                margin-top: 40px;
+                text-align: center;
+                color: #95a5a6;
+                font-size: 14px;
+                padding-top: 20px;
+                border-top: 1px solid #ecf0f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">✨ 星座运势 ✨</h1>
+            <div class="header">
+                <div class="constellation-name">{{constellation_name}}</div>
+                <div class="constellation-info">{{constellation_en}} | {{date_range}} | {{element}}元素 | 守护行星：{{ruling_planet}}</div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">基本信息</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">英文名称</div>
+                        <div class="info-value">{{constellation_en}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">日期范围</div>
+                        <div class="info-value">{{date_range}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">元素属性</div>
+                        <div class="info-value">{{element}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">守护行星</div>
+                        <div class="info-value">{{ruling_planet}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">运势周期</div>
+                        <div class="info-value">{{time_period}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">个性特征</div>
+                <div class="traits">
+                    <div class="trait-item">
+                        <div class="trait-label strengths">优点</div>
+                        <div class="info-value">{{strengths}}</div>
+                    </div>
+                    <div class="trait-item">
+                        <div class="trait-label weaknesses">缺点</div>
+                        <div class="info-value">{{weaknesses}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">配对建议</div>
+                <div class="matches">
+                    <div class="match-item">
+                        <div class="match-label best-match">最佳配对</div>
+                        <div class="info-value">{{best_match}}</div>
+                    </div>
+                    <div class="match-item">
+                        <div class="match-label good-match">较好配对</div>
+                        <div class="info-value">{{good_matches}}</div>
+                    </div>
+                    <div class="match-item">
+                        <div class="match-label fair-match">一般配对</div>
+                        <div class="info-value">{{fair_matches}}</div>
+                    </div>
+                    <div class="match-item">
+                        <div class="match-label poor-match">较差配对</div>
+                        <div class="info-value">{{poor_matches}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">运势详情</div>
+                <div class="fortune-grid">
+                    <div class="fortune-item">
+                        <div class="fortune-label">综合运势</div>
+                        <div class="fortune-value">{{general_fortune}}</div>
+                    </div>
+                    <div class="fortune-item">
+                        <div class="fortune-label">爱情运势</div>
+                        <div class="fortune-value">{{love_fortune}}</div>
+                    </div>
+                    <div class="fortune-item">
+                        <div class="fortune-label">事业运势</div>
+                        <div class="fortune-value">{{work_fortune}}</div>
+                    </div>
+                    <div class="fortune-item">
+                        <div class="fortune-label">财富运势</div>
+                        <div class="fortune-value">{{wealth_fortune}}</div>
+                    </div>
+                    <div class="fortune-item">
+                        <div class="fortune-label">健康运势</div>
+                        <div class="fortune-value">{{health_fortune}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">幸运指南</div>
+                <div class="lucky-info">
+                    <div class="lucky-item">
+                        <div class="lucky-label">幸运颜色</div>
+                        <div class="info-value">{{lucky_colors}}</div>
+                    </div>
+                    <div class="lucky-item">
+                        <div class="lucky-label">幸运数字</div>
+                        <div class="info-value">{{lucky_numbers}}</div>
+                    </div>
+                    <div class="lucky-item">
+                        <div class="lucky-label">幸运方向</div>
+                        <div class="info-value">{{lucky_direction}}</div>
+                    </div>
+                    <div class="lucky-item">
+                        <div class="lucky-label">幸运时间</div>
+                        <div class="info-value">{{lucky_time}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">今日建议</div>
+                <div class="advice">
+                    <div class="advice-content">{{love_advice}}</div>
+                </div>
+                <div class="advice">
+                    <div class="advice-label">欲望分析</div>
+                    <div class="advice-content">{{desire_analysis}}</div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                查询时间：{{current_time}} | 数据来源：专业星座运势服务
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
     async def text_to_image_menu_style(self, text: str) -> str:
         """使用菜单样式的HTML模板生成图片"""
         try:
@@ -1246,15 +1854,42 @@ class Main(Star):
                         elif "0#" in oil_type:
                             oil_prices["0"] = price
                     
-                    # 构造响应消息
-                    response = f"查询成功！地区[{city_name}]\n"
-                    response += f"趋势：前{qushi}\n"
-                    response += f"92号汽油：{oil_prices.get('92', '未知')}元/升\n"
-                    response += f"95号汽油：{oil_prices.get('95', '未知')}元/升\n"
-                    response += f"98号汽油：{oil_prices.get('98', '未知')}元/升\n"
-                    response += f"0号柴油：{oil_prices.get('0', '未知')}元/升"
+                    # 获取当前时间，用于显示在图片中
+                    current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     
-                    yield message.plain_result(response).use_t2i(False)
+                    # 准备模板数据
+                    template_data = {
+                        "city_name": city_name,
+                        "trend": qushi,
+                        "oil_92": oil_prices.get('92', '未知'),
+                        "oil_95": oil_prices.get('95', '未知'),
+                        "oil_98": oil_prices.get('98', '未知'),
+                        "oil_0": oil_prices.get('0', '未知'),
+                        "current_time": current_time
+                    }
+                    
+                    # 渲染HTML模板
+                    html_content = self.OIL_PRICE_TEMPLATE
+                    for key, value in template_data.items():
+                        placeholder = "{{" + key + "}}"
+                        html_content = html_content.replace(placeholder, str(value))
+                    
+                    # 使用html_render函数生成图片
+                    options = {
+                        "full_page": True,
+                        "type": "jpeg",
+                        "quality": 95,
+                    }
+                    
+                    image_url = await self.html_render(
+                        html_content,  # 渲染后的HTML内容
+                        {},  # 空数据字典
+                        True,  # 返回URL
+                        options  # 图片生成选项
+                    )
+                    
+                    # 返回图片结果
+                    yield message.image_result(image_url).use_t2i(False)
                     return
                         
         except aiohttp.ClientError as e:
@@ -1309,13 +1944,40 @@ class Main(Star):
                         yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
                         return
                     
-                    # 格式化输出结果
-                    response = f"成功估价【{result.get('qq', qq_number)}】\n"
-                    response += f"评估：{result.get('valuation', 0)}元\n"
-                    response += f"特点：{result.get('law', '')}\n"
-                    response += f"数字：{result.get('digit', '')}"
+                    # 获取当前时间，用于显示在图片中
+                    current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     
-                    yield message.plain_result(response).use_t2i(False)
+                    # 准备模板数据
+                    template_data = {
+                        "qq_number": result.get('qq', qq_number),
+                        "valuation": result.get('valuation', 0),
+                        "law": result.get('law', ''),
+                        "digit": result.get('digit', ''),
+                        "current_time": current_time
+                    }
+                    
+                    # 渲染HTML模板
+                    html_content = self.QQ_VALUATION_TEMPLATE
+                    for key, value in template_data.items():
+                        placeholder = "{{" + key + "}}"
+                        html_content = html_content.replace(placeholder, str(value))
+                    
+                    # 使用html_render函数生成图片
+                    options = {
+                        "full_page": True,
+                        "type": "jpeg",
+                        "quality": 95,
+                    }
+                    
+                    image_url = await self.html_render(
+                        html_content,  # 渲染后的HTML内容
+                        {},  # 空数据字典
+                        True,  # 返回URL
+                        options  # 图片生成选项
+                    )
+                    
+                    # 返回图片结果
+                    yield message.image_result(image_url).use_t2i(False)
                     return
                         
         except aiohttp.ClientError as e:
@@ -1346,12 +2008,14 @@ class Main(Star):
             return
         
         constellation = msg.strip()
-        api_url = "https://api.xcvts.cn/api/hotlist/xzys"
+        api_url = "https://api.jkyai.top/API/xzyspd.php"
         
         try:
             # 构造请求参数
             params = {
-                "msg": constellation
+                "msg": constellation,
+                "time": "today",
+                "type": "json"
             }
             
             timeout = aiohttp.ClientTimeout(total=30)
@@ -1361,34 +2025,76 @@ class Main(Star):
                         yield message.plain_result(f"请求星座运势失败，服务器返回错误状态码：{resp.status}").use_t2i(False)
                         return
                     
-                    # 检查响应是否为图片
-                    content_type = resp.headers.get("content-type", "")
-                    if not content_type.startswith("image/"):
-                        # 读取响应内容，查看是否为错误信息
-                        error_content = await resp.text()
-                        yield message.plain_result(f"获取星座运势图片失败：{error_content}").use_t2i(False)
+                    # 读取响应文本，解析JSON
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
+                    
+                    # 检查API返回是否成功
+                    if result.get("status") != "success":
+                        yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
                         return
                     
-                    # 下载图片到本地
-                    import uuid
-                    import os
-                    from astrbot.api.message_components import Image
+                    # 获取当前时间，用于显示在图片中
+                    current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     
-                    # 创建存储目录
-                    save_dir = f"data/{self.PLUGIN_NAME}_images"
-                    if not os.path.exists(save_dir):
-                        os.makedirs(save_dir)
+                    # 将列表类型的字段转换为字符串，以便在HTML模板中显示
+                    lucky_colors = ", ".join(result.get("lucky_colors", []))
+                    lucky_numbers = ", ".join(map(str, result.get("lucky_numbers", [])))
+                    good_matches = ", ".join(result.get("good_matches", []))
+                    fair_matches = ", ".join(result.get("fair_matches", []))
+                    poor_matches = ", ".join(result.get("poor_matches", []))
                     
-                    # 生成唯一文件名，使用.png后缀因为API返回的是图片
-                    file_name = f"{uuid.uuid4().hex}.png"
-                    file_path = os.path.join(save_dir, file_name)
+                    # 准备模板数据
+                    template_data = {
+                        "constellation_name": result.get("constellation_name", constellation),
+                        "constellation_en": result.get("constellation_en", ""),
+                        "date_range": result.get("date_range", ""),
+                        "element": result.get("element", ""),
+                        "ruling_planet": result.get("ruling_planet", ""),
+                        "strengths": result.get("strengths", ""),
+                        "weaknesses": result.get("weaknesses", ""),
+                        "best_match": result.get("best_match", ""),
+                        "best_match_en": result.get("best_match_en", ""),
+                        "good_matches": good_matches,
+                        "fair_matches": fair_matches,
+                        "poor_matches": poor_matches,
+                        "lucky_colors": lucky_colors,
+                        "lucky_numbers": lucky_numbers,
+                        "time_period": result.get("time_period", "today"),
+                        "love_advice": result.get("love_advice", ""),
+                        "general_fortune": result.get("general_fortune", ""),
+                        "love_fortune": result.get("love_fortune", ""),
+                        "work_fortune": result.get("work_fortune", ""),
+                        "wealth_fortune": result.get("wealth_fortune", ""),
+                        "health_fortune": result.get("health_fortune", ""),
+                        "desire_analysis": result.get("desire_analysis", ""),
+                        "lucky_direction": result.get("lucky_direction", ""),
+                        "lucky_time": result.get("lucky_time", ""),
+                        "current_time": current_time
+                    }
                     
-                    # 下载图片
-                    with open(file_path, "wb") as f:
-                        f.write(await resp.read())
+                    # 渲染HTML模板
+                    html_content = self.CONSTELLATION_FORTUNE_TEMPLATE
+                    for key, value in template_data.items():
+                        placeholder = "{{" + key + "}}"
+                        html_content = html_content.replace(placeholder, str(value))
                     
-                    # 使用本地文件路径发送图片
-                    yield message.chain_result([Image.fromFileSystem(file_path)]).use_t2i(False)
+                    # 使用html_render函数生成图片
+                    options = {
+                        "full_page": True,
+                        "type": "jpeg",
+                        "quality": 95,
+                    }
+                    
+                    image_url = await self.html_render(
+                        html_content,  # 渲染后的HTML内容
+                        {},  # 空数据字典
+                        True,  # 返回URL
+                        options  # 图片生成选项
+                    )
+                    
+                    # 返回图片结果
+                    yield message.image_result(image_url).use_t2i(False)
                     return
                         
         except aiohttp.ClientError as e:
@@ -1398,6 +2104,10 @@ class Main(Star):
         except asyncio.TimeoutError:
             logger.error("请求超时")
             yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
             return
         except Exception as e:
             logger.error(f"请求星座运势时发生错误：{e}")
