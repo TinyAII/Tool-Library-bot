@@ -1479,7 +1479,7 @@ class Main(Star):
             return
         
         hero_name = msg.strip()
-        api_url = "https://api.jkyai.top/API/wzzlcx.php"
+        api_url = "https://yunzhiapi.cn/API/wzzlcx.php"
         
         try:
             # 构造请求参数（注意API文档中的参数名是hero，但示例中写的是hreo，这里使用正确的hero）
@@ -1714,7 +1714,7 @@ class Main(Star):
             return
         
         prompt = msg.strip()
-        api_url = "https://api.jkyai.top/API/ks/api.php"
+        api_url = "https://yunzhiapi.cn//API/ks/api.php"
         
         try:
             # 先回复用户正在生成图片
@@ -2153,7 +2153,7 @@ class Main(Star):
             return
         
         constellation = msg.strip()
-        api_url = "https://api.jkyai.top/API/xzyspd.php"
+        api_url = "https://yunzhiapi.cn//API/xzyspd.php"
         
         try:
             # 构造请求参数
@@ -2276,7 +2276,7 @@ class Main(Star):
             return
         
         encrypt_content = msg.strip()
-        api_url = "https://api.jkyai.top/API/shouyu/api.php"
+        api_url = "https://yunzhiapi.cn//API/shouyu/api.php"
         
         try:
             # 构造请求参数
@@ -2346,7 +2346,7 @@ class Main(Star):
             return
         
         decrypt_content = msg.strip()
-        api_url = "https://api.jkyai.top/API/shouyu/api.php"
+        api_url = "https://yunzhiapi.cn/API/shouyu/api.php"
         
         try:
             # 构造请求参数
