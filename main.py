@@ -183,7 +183,7 @@ class Main(Star):
                 color: #333;
             }
             .container {
-                max-width: 900px;
+                max-width: 800px;
                 margin: 0 auto;
                 background-color: white;
                 border-radius: 15px;
@@ -217,48 +217,57 @@ class Main(Star):
             }
             .platforms-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 25px;
+                grid-template-columns: 1fr;
+                gap: 30px;
                 margin: 30px 0;
             }
             .platform-card {
                 background-color: #f8f9fa;
                 border-radius: 12px;
-                padding: 25px;
+                padding: 30px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.1);
                 border-top: 5px solid #3498db;
             }
             .platform-name {
-                font-size: 20px;
+                font-size: 24px;
                 font-weight: bold;
                 color: #2c3e50;
                 text-align: center;
-                margin-bottom: 20px;
-                padding-bottom: 10px;
+                margin-bottom: 25px;
+                padding-bottom: 15px;
                 border-bottom: 2px solid #ecf0f1;
             }
+            .power-list {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
             .power-item {
+                background-color: white;
+                border-radius: 10px;
+                padding: 18px 25px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border-left: 5px solid #e67e22;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin: 15px 0;
-                padding: 10px 0;
-                border-bottom: 1px solid #ecf0f1;
-            }
-            .power-label {
-                font-size: 16px;
-                font-weight: bold;
-                color: #2c3e50;
-            }
-            .power-value {
                 font-size: 18px;
                 font-weight: bold;
-                color: #e67e22;
             }
-            .region {
-                font-size: 12px;
-                color: #7f8c8d;
-                margin-left: 8px;
+            .power-section {
+                color: #e74c3c;
+                font-size: 20px;
+                font-weight: bold;
+            }
+            .power-region {
+                color: #3498db;
+                font-size: 18px;
+                font-weight: bold;
+            }
+            .power-num {
+                color: #27ae60;
+                font-size: 22px;
+                font-weight: bold;
             }
             .footer {
                 margin-top: 30px;
@@ -281,81 +290,89 @@ class Main(Star):
                 <!-- Android QQ区 -->
                 <div class="platform-card">
                     <div class="platform-name">📱 Android QQ</div>
-                    <div class="power-item">
-                        <div class="power-label">国服最低战力<span class="region">全服</span></div>
-                        <div class="power-value">{{aqq_guobiao}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">省标最低战力<span class="region">{{aqq_province}}</span></div>
-                        <div class="power-value">{{aqq_provincePower}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">市标最低战力<span class="region">{{aqq_city}}</span></div>
-                        <div class="power-value">{{aqq_cityPower}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">区标最低战力<span class="region">{{aqq_area}}</span></div>
-                        <div class="power-value">{{aqq_areaPower}}</div>
+                    <div class="power-list">
+                        <div class="power-item">
+                            <span><span class="power-section">【国服】</span><span class="power-region">[全服]</span></span>
+                            <span class="power-num">{{aqq_guobiao}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【省】</span><span class="power-region">[{{aqq_province}}]</span></span>
+                            <span class="power-num">{{aqq_provincePower}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【市】</span><span class="power-region">[{{aqq_city}}]</span></span>
+                            <span class="power-num">{{aqq_cityPower}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【区】</span><span class="power-region">[{{aqq_area}}]</span></span>
+                            <span class="power-num">{{aqq_areaPower}}</span>
+                        </div>
                     </div>
                 </div>
                 <!-- Android 微信区 -->
                 <div class="platform-card">
                     <div class="platform-name">📱 Android 微信</div>
-                    <div class="power-item">
-                        <div class="power-label">国服最低战力<span class="region">全服</span></div>
-                        <div class="power-value">{{awx_guobiao}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">省标最低战力<span class="region">{{awx_province}}</span></div>
-                        <div class="power-value">{{awx_provincePower}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">市标最低战力<span class="region">{{awx_city}}</span></div>
-                        <div class="power-value">{{awx_cityPower}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">区标最低战力<span class="region">{{awx_area}}</span></div>
-                        <div class="power-value">{{awx_areaPower}}</div>
+                    <div class="power-list">
+                        <div class="power-item">
+                            <span><span class="power-section">【国服】</span><span class="power-region">[全服]</span></span>
+                            <span class="power-num">{{awx_guobiao}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【省】</span><span class="power-region">[{{awx_province}}]</span></span>
+                            <span class="power-num">{{awx_provincePower}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【市】</span><span class="power-region">[{{awx_city}}]</span></span>
+                            <span class="power-num">{{awx_cityPower}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【区】</span><span class="power-region">[{{awx_area}}]</span></span>
+                            <span class="power-num">{{awx_areaPower}}</span>
+                        </div>
                     </div>
                 </div>
                 <!-- iOS QQ区 -->
                 <div class="platform-card">
                     <div class="platform-name">🍎 iOS QQ</div>
-                    <div class="power-item">
-                        <div class="power-label">国服最低战力<span class="region">全服</span></div>
-                        <div class="power-value">{{iqq_guobiao}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">省标最低战力<span class="region">{{iqq_province}}</span></div>
-                        <div class="power-value">{{iqq_provincePower}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">市标最低战力<span class="region">{{iqq_city}}</span></div>
-                        <div class="power-value">{{iqq_cityPower}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">区标最低战力<span class="region">{{iqq_area}}</span></div>
-                        <div class="power-value">{{iqq_areaPower}}</div>
+                    <div class="power-list">
+                        <div class="power-item">
+                            <span><span class="power-section">【国服】</span><span class="power-region">[全服]</span></span>
+                            <span class="power-num">{{iqq_guobiao}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【省】</span><span class="power-region">[{{iqq_province}}]</span></span>
+                            <span class="power-num">{{iqq_provincePower}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【市】</span><span class="power-region">[{{iqq_city}}]</span></span>
+                            <span class="power-num">{{iqq_cityPower}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【区】</span><span class="power-region">[{{iqq_area}}]</span></span>
+                            <span class="power-num">{{iqq_areaPower}}</span>
+                        </div>
                     </div>
                 </div>
                 <!-- iOS 微信区 -->
                 <div class="platform-card">
                     <div class="platform-name">🍎 iOS 微信</div>
-                    <div class="power-item">
-                        <div class="power-label">国服最低战力<span class="region">全服</span></div>
-                        <div class="power-value">{{iwx_guobiao}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">省标最低战力<span class="region">{{iwx_province}}</span></div>
-                        <div class="power-value">{{iwx_provincePower}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">市标最低战力<span class="region">{{iwx_city}}</span></div>
-                        <div class="power-value">{{iwx_cityPower}}</div>
-                    </div>
-                    <div class="power-item">
-                        <div class="power-label">区标最低战力<span class="region">{{iwx_area}}</span></div>
-                        <div class="power-value">{{iwx_areaPower}}</div>
+                    <div class="power-list">
+                        <div class="power-item">
+                            <span><span class="power-section">【国服】</span><span class="power-region">[全服]</span></span>
+                            <span class="power-num">{{iwx_guobiao}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【省】</span><span class="power-region">[{{iwx_province}}]</span></span>
+                            <span class="power-num">{{iwx_provincePower}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【市】</span><span class="power-region">[{{iwx_city}}]</span></span>
+                            <span class="power-num">{{iwx_cityPower}}</span>
+                        </div>
+                        <div class="power-item">
+                            <span><span class="power-section">【区】</span><span class="power-region">[{{iwx_area}}]</span></span>
+                            <span class="power-num">{{iwx_areaPower}}</span>
+                        </div>
                     </div>
                 </div>
             </div>
