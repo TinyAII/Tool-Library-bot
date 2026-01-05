@@ -2399,6 +2399,49 @@ class Main(Star):
                         yield message.plain_result("解密失败：返回结果为空").use_t2i(False)
                         return
                     
+                    # AI审核步骤
+                    ai_api_url = "https://api.jkyai.top/API/depsek3.2.php"
+                    ai_system_prompt = "你是一个专业的合规内容审核助手，请严格检测以下文本中是否包含违规内容。\n\n违规词范围包括但不限于：\n\n暴力、血腥、恐怖内容\n\n仇恨、歧视、人身攻击言论\n\n违法、违禁品或行为引导\n\n政治敏感、不当言论\n\n色情、低俗、性暗示内容\n\n虚假信息、不实谣言\n\n诈骗、广告、恶意推广\n\n泄露隐私、他人信息\n\n链接一概不允许\n\n其他违反公序良俗的内容\n\n请按以下步骤处理：\n\n逐句或分段分析文本内容；\n\n如发现疑似违规词或内容则输出：false\n\n如果内容安全则输出：true"
+                    
+                    ai_question = f"{ai_system_prompt}\n\n需要审核的文本：\n{decrypted_text}"
+                    
+                    try:
+                        # 调用AI审核API
+                        ai_params = {
+                            "question": ai_question,
+                            "type": "text"
+                        }
+                        
+                        async with session.get(ai_api_url, params=ai_params) as ai_resp:
+                            if ai_resp.status != 200:
+                                # AI审核失败，仍返回解密结果
+                                logger.warning(f"AI审核失败，状态码：{ai_resp.status}")
+                                yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                                return
+                            
+                            ai_result = await ai_resp.text()
+                            ai_result = ai_result.strip().lower()
+                            
+                            # 检查AI审核结果
+                            if ai_result == "false":
+                                # 内容违规，返回违规提示
+                                yield message.plain_result("您提供的密文解析后遭到QQ安全中心检测系统拦截，不予放行!!!").use_t2i(False)
+                                return
+                            elif ai_result == "true":
+                                # 内容安全，返回解密结果
+                                yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                                return
+                            else:
+                                # AI返回格式异常，仍返回解密结果
+                                logger.warning(f"AI审核结果格式异常：{ai_result}")
+                                yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                                return
+                    except Exception as ai_e:
+                        # AI审核过程中发生异常，仍返回解密结果
+                        logger.error(f"AI审核过程中发生错误：{ai_e}")
+                        yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                        return
+                    
                     # 返回解密结果
                     yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
                     return
@@ -2420,6 +2463,88 @@ class Main(Star):
             yield message.plain_result(f"请求解密时发生错误：{str(e)}").use_t2i(False)
             return
     
+    @filter.command("AES加密")
+    async def aes_encrypt(self, message: AstrMessageEvent):
+        """AES高级加密，支持多种模式和填充方式"""
+        # 提取命令参数
+        msg = message.message_str.replace("AES加密", "").strip()
+        
+        if not msg:
+            yield message.plain_result("缺少参数，正确示例：\n\nAES加密 加密密钥 加密内容").use_t2i(False)
+            return
+        
+        # 解析加密密钥和加密内容
+        parts = msg.split()
+        if len(parts) < 2:
+            yield message.plain_result("参数格式错误，请输入加密密钥和加密内容\n\n正确示例：\nAES加密 mykey Hello World").use_t2i(False)
+            return
+        
+        # 提取加密密钥和加密内容
+        key = parts[0]
+        text = " ".join(parts[1:])
+        
+        api_url = "https://uapis.cn/api/v1/text/aes/encrypt-advanced"
+        
+        try:
+            # 构造请求体
+            payload = {
+                "text": text,
+                "key": key,
+                "mode": "GCM",
+                "padding": "PKCS7",
+                "output_format": "base64"
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.post(api_url, json=payload) as resp:
+                    if resp.status != 200:
+                        raw_content = await resp.text()
+                        try:
+                            error_result = json.loads(raw_content)
+                            error_msg = error_result.get("error", f"服务器返回错误状态码：{resp.status}")
+                        except json.JSONDecodeError:
+                            error_msg = f"服务器返回错误状态码：{resp.status}"
+                        yield message.plain_result(f"AES加密失败：{error_msg}").use_t2i(False)
+                        return
+                    
+                    # 读取响应文本，解析JSON
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
+                    
+                    # 提取加密结果
+                    ciphertext = result.get("ciphertext", "")
+                    mode = result.get("mode", "")
+                    padding = result.get("padding", "")
+                    
+                    if not ciphertext:
+                        yield message.plain_result("AES加密失败：返回结果为空").use_t2i(False)
+                        return
+                    
+                    # 构造响应消息
+                    response = f"密文：{ciphertext}\n模式：{mode}\n填充：{padding}\n\n注意！！保护好你的密文和加密密钥，解密需要加密密钥和密文"
+                    
+                    # 返回加密结果
+                    yield message.plain_result(response).use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result(f"无法连接到AES加密服务器：{str(e)}").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求AES加密时发生错误：{e}")
+            yield message.plain_result(f"请求AES加密时发生错误：{str(e)}").use_t2i(False)
+            return
+    
     @filter.command("工具箱菜单")
     async def toolbox_menu(self, message: AstrMessageEvent):
         """显示工具箱插件的所有可用命令"""
@@ -2429,7 +2554,7 @@ class Main(Star):
 📅 早安 / 晚安 - 记录睡眠时间，计算睡眠时长
 
 【游戏相关】
-🎮 战力查询 <安卓qq/安卓微信/苹果qq/苹果微信> <英雄名> - 查询王者荣耀英雄战力
+🎮 战力查询 <英雄名> - 查询王者荣耀英雄战力，显示四个战区数据
 🌍 mc服务器 <服务器地址> - 查询Minecraft服务器状态
 
 【生活服务】
@@ -2442,18 +2567,20 @@ class Main(Star):
 
 【网络工具】
 🌐 代理ip - 获取socks5代理IP
+🔒 AES加密 <密钥> <内容> - 高级AES加密
 
 【娱乐功能】
 ✨ 星座运势 <星座名> - 查询星座运势图片
 🔒 加密 <内容> - 兽语在线加密
-🔓 解密 <内容> - 兽语在线解密
+🔓 解密 <内容> - 兽语在线解密（含AI安全审核）
 
 📌 使用示例：
-战力查询 安卓qq 小乔
+战力查询 小乔
 路线查询 广州 深圳
 绘画 一只可爱的猫
 加密 121
 解密 嗷～嗷啊
+AES加密 mykey Hello World
 
 💡 所有命令支持群聊和私聊使用"""
         
