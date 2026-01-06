@@ -116,11 +116,12 @@ class Main(Star):
             .command-name {
                 font-weight: bold;
                 color: #dc3545;
-                font-size: 20px;
+                font-size: 24px;
             }
             .command-format {
-                color: #333;
-                font-weight: normal;
+                color: #dc3545;
+                font-weight: bold;
+                font-size: 20px;
             }
             .command-desc {
                 color: #495057;
@@ -938,6 +939,286 @@ class Main(Star):
             </div>
             <div class="footer">
                 查询时间：{{current_time}} | 数据来源：专业QQ估价服务
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
+    # 天气查询结果的HTML模板
+    WEATHER_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>天气查询结果</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%);
+                margin: 0;
+                padding: 30px;
+                line-height: 1.6;
+                color: #333;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 15px;
+                padding: 40px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            }
+            .title {
+                font-size: 32px;
+                font-weight: bold;
+                text-align: center;
+                color: #4682B4;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .weather-header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background-color: #e3f2fd;
+                border-radius: 10px;
+            }
+            .city-name {
+                font-size: 36px;
+                font-weight: bold;
+                color: #1976d2;
+                margin-bottom: 10px;
+            }
+            .update-time {
+                font-size: 14px;
+                color: #7f8c8d;
+            }
+            .basic-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                margin: 30px 0;
+                text-align: center;
+            }
+            .weather-main {
+                grid-column: 1 / -1;
+                background-color: #f0f8ff;
+                padding: 30px;
+                border-radius: 10px;
+                border: 2px solid #87CEEB;
+            }
+            .weather-status {
+                font-size: 24px;
+                font-weight: bold;
+                color: #1976d2;
+                margin-bottom: 10px;
+            }
+            .temperature {
+                font-size: 64px;
+                font-weight: bold;
+                color: #ff5722;
+                margin: 20px 0;
+            }
+            .basic-details {
+                display: flex;
+                justify-content: space-around;
+                flex-wrap: wrap;
+                gap: 20px;
+                margin-top: 20px;
+            }
+            .detail-item {
+                font-size: 18px;
+                color: #666;
+            }
+            .detail-label {
+                font-weight: bold;
+                color: #4682B4;
+            }
+            .section-title {
+                font-size: 24px;
+                font-weight: bold;
+                color: #4682B4;
+                margin: 30px 0 20px 0;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #87CEEB;
+            }
+            .info-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+                margin: 20px 0;
+            }
+            .info-item {
+                background-color: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .info-label {
+                font-size: 14px;
+                color: #7f8c8d;
+                margin-bottom: 10px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .info-value {
+                font-size: 20px;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+            .life-indices {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin: 20px 0;
+            }
+            .index-item {
+                background-color: #f0f8ff;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border-left: 5px solid #87CEEB;
+            }
+            .index-label {
+                font-size: 16px;
+                font-weight: bold;
+                color: #1976d2;
+                margin-bottom: 10px;
+            }
+            .index-level {
+                font-size: 18px;
+                font-weight: bold;
+                color: #ff5722;
+                margin-bottom: 5px;
+            }
+            .index-brief {
+                font-size: 16px;
+                color: #666;
+                margin-bottom: 10px;
+            }
+            .index-advice {
+                font-size: 14px;
+                color: #444;
+                line-height: 1.5;
+            }
+            .footer {
+                margin-top: 40px;
+                text-align: center;
+                color: #95a5a6;
+                font-size: 14px;
+                padding-top: 20px;
+                border-top: 1px solid #ecf0f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">🌤️ 天气查询结果 🌤️</h1>
+            <div class="weather-header">
+                <div class="city-name">{{city}}</div>
+                <div class="update-time">数据更新时间：{{report_time}}</div>
+            </div>
+            
+            <div class="basic-info">
+                <div class="weather-main">
+                    <div class="weather-status">{{weather}}</div>
+                    <div class="temperature">{{temperature}}°C</div>
+                    <div class="basic-details">
+                        <div class="detail-item"><span class="detail-label">风向：</span>{{wind_direction}}</div>
+                        <div class="detail-item"><span class="detail-label">风力：</span>{{wind_power}}</div>
+                        <div class="detail-item"><span class="detail-label">湿度：</span>{{humidity}}%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 class="section-title">📊 扩展气象信息</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">体感温度</div>
+                    <div class="info-value">{{feels_like}}°C</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">能见度</div>
+                    <div class="info-value">{{visibility}} km</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">气压</div>
+                    <div class="info-value">{{pressure}} hPa</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">紫外线指数</div>
+                    <div class="info-value">{{uv}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">空气质量</div>
+                    <div class="info-value">{{aqi}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">降水量</div>
+                    <div class="info-value">{{precipitation}} mm</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">云量</div>
+                    <div class="info-value">{{cloud}}%</div>
+                </div>
+            </div>
+            
+            <h3 class="section-title">📋 生活指数</h3>
+            <div class="life-indices">
+                <div class="index-item">
+                    <div class="index-label">穿衣指数</div>
+                    <div class="index-level">{{clothing_level}}</div>
+                    <div class="index-brief">{{clothing_brief}}</div>
+                    <div class="index-advice">{{clothing_advice}}</div>
+                </div>
+                <div class="index-item">
+                    <div class="index-label">紫外线指数</div>
+                    <div class="index-level">{{uv_level}}</div>
+                    <div class="index-brief">{{uv_brief}}</div>
+                    <div class="index-advice">{{uv_advice}}</div>
+                </div>
+                <div class="index-item">
+                    <div class="index-label">洗车指数</div>
+                    <div class="index-level">{{car_wash_level}}</div>
+                    <div class="index-brief">{{car_wash_brief}}</div>
+                    <div class="index-advice">{{car_wash_advice}}</div>
+                </div>
+                <div class="index-item">
+                    <div class="index-label">晾晒指数</div>
+                    <div class="index-level">{{drying_level}}</div>
+                    <div class="index-brief">{{drying_brief}}</div>
+                    <div class="index-advice">{{drying_advice}}</div>
+                </div>
+                <div class="index-item">
+                    <div class="index-label">空调指数</div>
+                    <div class="index-level">{{air_conditioner_level}}</div>
+                    <div class="index-brief">{{air_conditioner_brief}}</div>
+                    <div class="index-advice">{{air_conditioner_advice}}</div>
+                </div>
+                <div class="index-item">
+                    <div class="index-label">感冒指数</div>
+                    <div class="index-level">{{cold_risk_level}}</div>
+                    <div class="index-brief">{{cold_risk_brief}}</div>
+                    <div class="index-advice">{{cold_risk_advice}}</div>
+                </div>
+                <div class="index-item">
+                    <div class="index-label">运动指数</div>
+                    <div class="index-level">{{exercise_level}}</div>
+                    <div class="index-brief">{{exercise_brief}}</div>
+                    <div class="index-advice">{{exercise_advice}}</div>
+                </div>
+                <div class="index-item">
+                    <div class="index-label">舒适度指数</div>
+                    <div class="index-level">{{comfort_level}}</div>
+                    <div class="index-brief">{{comfort_brief}}</div>
+                    <div class="index-advice">{{comfort_advice}}</div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                查询时间：{{current_time}} | 数据来源：专业天气服务
             </div>
         </div>
     </body>
@@ -1803,14 +2084,14 @@ class Main(Star):
             yield message.plain_result(f"请求AI绘画时发生错误：{str(e)}").use_t2i(False)
             return
 
-    @filter.command("mc服务器")
+    @filter.command("mcs")
     async def mc_server_status(self, message: AstrMessageEvent):
         """查询Minecraft服务器状态"""
         # 提取服务器地址参数
-        msg = message.message_str.replace("mc服务器", "").strip()
+        msg = message.message_str.replace("mcs", "").strip()
         
         if not msg:
-            yield message.plain_result("缺少必要参数，正确示例：\n\nmc服务器 121.com").use_t2i(False)
+            yield message.plain_result("缺少必要参数，正确示例：\n\nmcs 121.com").use_t2i(False)
             return
         
         server_addr = msg.strip()
@@ -2279,6 +2560,157 @@ class Main(Star):
             logger.error(f"请求星座运势时发生错误：{e}")
             yield message.plain_result(f"请求星座运势时发生错误：{str(e)}").use_t2i(False)
             return
+    
+    @filter.command("天气")
+    async def weather(self, message: AstrMessageEvent):
+        """查询指定城市的天气信息"""
+        # 提取城市名称参数
+        msg = message.message_str.replace("天气", "").strip()
+        
+        if not msg:
+            yield message.plain_result("正确指令：天气 <城市名>\n\n示例：天气 长沙").use_t2i(False)
+            return
+        
+        city = msg.strip()
+        api_url = "https://uapis.cn/api/v1/misc/weather"
+        
+        try:
+            # 构造请求参数
+            params = {
+                "city": city,
+                "extended": "true",
+                "indices": "true"
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(api_url, params=params) as resp:
+                    if resp.status != 200:
+                        try:
+                            raw_content = await resp.text()
+                            result = json.loads(raw_content)
+                            yield message.plain_result(f"天气查询失败：{result.get('message', '未知错误')}").use_t2i(False)
+                        except json.JSONDecodeError:
+                            yield message.plain_result(f"天气查询失败：服务器返回错误状态码 {resp.status}").use_t2i(False)
+                        return
+                    
+                    # 读取响应文本，解析JSON
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
+                    
+                    # 获取当前时间，用于显示在图片中
+                    current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    # 准备模板数据
+                    template_data = {
+                        "city": result.get("city", city),
+                        "report_time": result.get("report_time", ""),
+                        "weather": result.get("weather", ""),
+                        "temperature": result.get("temperature", 0),
+                        "wind_direction": result.get("wind_direction", ""),
+                        "wind_power": result.get("wind_power", ""),
+                        "humidity": result.get("humidity", 0),
+                        "feels_like": result.get("feels_like", 0),
+                        "visibility": result.get("visibility", 0),
+                        "pressure": result.get("pressure", 0),
+                        "uv": result.get("uv", 0),
+                        "aqi": result.get("aqi", 0),
+                        "precipitation": result.get("precipitation", 0),
+                        "cloud": result.get("cloud", 0),
+                        "current_time": current_time
+                    }
+                    
+                    # 处理生活指数数据
+                    life_indices = result.get("life_indices", {})
+                    
+                    # 穿衣指数
+                    clothing = life_indices.get("clothing", {})
+                    template_data["clothing_level"] = clothing.get("level", "")
+                    template_data["clothing_brief"] = clothing.get("brief", "")
+                    template_data["clothing_advice"] = clothing.get("advice", "")
+                    
+                    # 紫外线指数
+                    uv_index = life_indices.get("uv", {})
+                    template_data["uv_level"] = uv_index.get("level", "")
+                    template_data["uv_brief"] = uv_index.get("brief", "")
+                    template_data["uv_advice"] = uv_index.get("advice", "")
+                    
+                    # 洗车指数
+                    car_wash = life_indices.get("car_wash", {})
+                    template_data["car_wash_level"] = car_wash.get("level", "")
+                    template_data["car_wash_brief"] = car_wash.get("brief", "")
+                    template_data["car_wash_advice"] = car_wash.get("advice", "")
+                    
+                    # 晾晒指数
+                    drying = life_indices.get("drying", {})
+                    template_data["drying_level"] = drying.get("level", "")
+                    template_data["drying_brief"] = drying.get("brief", "")
+                    template_data["drying_advice"] = drying.get("advice", "")
+                    
+                    # 空调指数
+                    air_conditioner = life_indices.get("air_conditioner", {})
+                    template_data["air_conditioner_level"] = air_conditioner.get("level", "")
+                    template_data["air_conditioner_brief"] = air_conditioner.get("brief", "")
+                    template_data["air_conditioner_advice"] = air_conditioner.get("advice", "")
+                    
+                    # 感冒指数
+                    cold_risk = life_indices.get("cold_risk", {})
+                    template_data["cold_risk_level"] = cold_risk.get("level", "")
+                    template_data["cold_risk_brief"] = cold_risk.get("brief", "")
+                    template_data["cold_risk_advice"] = cold_risk.get("advice", "")
+                    
+                    # 运动指数
+                    exercise = life_indices.get("exercise", {})
+                    template_data["exercise_level"] = exercise.get("level", "")
+                    template_data["exercise_brief"] = exercise.get("brief", "")
+                    template_data["exercise_advice"] = exercise.get("advice", "")
+                    
+                    # 舒适度指数
+                    comfort = life_indices.get("comfort", {})
+                    template_data["comfort_level"] = comfort.get("level", "")
+                    template_data["comfort_brief"] = comfort.get("brief", "")
+                    template_data["comfort_advice"] = comfort.get("advice", "")
+                    
+                    # 渲染HTML模板
+                    html_content = self.WEATHER_TEMPLATE
+                    for key, value in template_data.items():
+                        placeholder = "{{" + key + "}}"
+                        html_content = html_content.replace(placeholder, str(value))
+                    
+                    # 使用html_render函数生成图片
+                    options = {
+                        "full_page": True,
+                        "type": "jpeg",
+                        "quality": 95,
+                    }
+                    
+                    image_url = await self.html_render(
+                        html_content,  # 渲染后的HTML内容
+                        {},  # 空数据字典
+                        True,  # 返回URL
+                        options  # 图片生成选项
+                    )
+                    
+                    # 返回图片结果
+                    yield message.image_result(image_url).use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result(f"无法连接到天气查询服务器：{str(e)}").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求天气查询时发生错误：{e}")
+            yield message.plain_result(f"请求天气查询时发生错误：{str(e)}").use_t2i(False)
+            return
 
     @filter.command("加密")
     async def shouyu_encrypt(self, message: AstrMessageEvent):
@@ -2648,10 +3080,105 @@ class Main(Star):
                         yield message.plain_result("AES解密失败：返回结果为空").use_t2i(False)
                         return
                     
-                    # 构造响应消息
-                    response = f"解密成功！\n\n内容：{plaintext}"
+                    # AI审核步骤
+                    ai_api_url = "https://api.jkyai.top/API/depsek3.2.php"
+                    ai_system_prompt = "你是一个专业的合规内容审核助手，请严格检测以下文本中是否包含违规内容。\n\n违规词范围包括但不限于：\n\n暴力、血腥、恐怖内容\n\n仇恨、歧视、人身攻击言论\n\n违法、违禁品或行为引导\n\n政治敏感、不当言论\n\n色情、低俗、性暗示内容\n\n虚假信息、不实谣言\n\n诈骗、广告、恶意推广\n\n泄露隐私、他人信息\n\n链接一概不允许\n\n其他违反公序良俗的内容\n\n请按以下步骤处理：\n\n1. 逐句或分段分析文本内容；\n2. 如发现疑似违规词或内容则输出：false\n3. 如果内容安全则输出：true\n4. 并且给出拦截原因，比如如果是链接就输出：包含链接！！\n   如果是骂人则输出：不当言论！！\n   如果是骂人和链接一起就输出：包含链接和不当言论！！\n5. 并且按照恶劣程度给出违规分数，1-10分\n\n输出格式要求：\n<安全状态>\n<拦截原因（如果安全则为空）>\n<违规分数（如果安全则为0）>\n\n例如：\nfalse\n不当言论！！\n8\n\n或：\ntrue\n\n0"
+                    
+                    ai_question = f"{ai_system_prompt}\n\n需要审核的文本：\n{plaintext}"
+                    
+                    try:
+                        # 调用AI审核API
+                        ai_params = {
+                            "question": ai_question,
+                            "type": "text"
+                        }
+                        
+                        async with session.get(ai_api_url, params=ai_params) as ai_resp:
+                            if ai_resp.status != 200:
+                                # AI审核失败，仍返回解密结果
+                                logger.warning(f"AI审核失败，状态码：{ai_resp.status}")
+                                response = f"解密成功！\n\n内容：{plaintext}"
+                                yield message.plain_result(response).use_t2i(False)
+                                return
+                            
+                            ai_result = await ai_resp.text()
+                            ai_result = ai_result.strip()
+                            
+                            # 解析AI结果
+                            try:
+                                ai_lines = ai_result.split('\n')
+                                if len(ai_lines) < 1:
+                                    # 结果格式异常，仍返回解密结果
+                                    logger.warning(f"AI审核结果格式异常：{ai_result}")
+                                    response = f"解密成功！\n\n内容：{plaintext}"
+                                    yield message.plain_result(response).use_t2i(False)
+                                    return
+                                
+                                # 提取安全状态
+                                safety_status = ai_lines[0].strip().lower()
+                                
+                                # 提取拦截原因（如果存在）
+                                intercept_reason = ""
+                                if len(ai_lines) > 1:
+                                    intercept_reason = ai_lines[1].strip()
+                                
+                                # 提取违规分数（如果存在）
+                                violation_score = 0
+                                if len(ai_lines) > 2:
+                                    try:
+                                        violation_score = int(ai_lines[2].strip())
+                                    except ValueError:
+                                        violation_score = 0
+                                
+                                # 计算违规程度
+                                if violation_score >= 7:
+                                    severity = "非常恶劣"
+                                elif violation_score >= 4:
+                                    severity = "中度恶劣"
+                                elif violation_score >= 1:
+                                    severity = "轻度恶劣"
+                                else:
+                                    severity = "无"
+                                
+                                # 检查AI审核结果
+                                if safety_status == "false":
+                                    # 内容违规，返回违规提示
+                                    if intercept_reason:
+                                        response = f"您提供的密文解析后遭到QQ安全中心检测系统拦截，不予放行!!!\n\n违规内容含：{intercept_reason}\n违规程度：{violation_score}分<{severity}>"
+                                    else:
+                                        response = f"您提供的密文解析后遭到QQ安全中心检测系统拦截，不予放行!!!\n\n违规程度：{violation_score}分<{severity}>"
+                                    
+                                    # 记录违规分数到日志
+                                    logger.warning(f"AES解密内容违规，原因：{intercept_reason}，违规分数：{violation_score}，违规程度：{severity}")
+                                    
+                                    yield message.plain_result(response).use_t2i(False)
+                                    return
+                                elif safety_status == "true":
+                                    # 内容安全，返回解密结果
+                                    response = f"解密成功！\n\n内容：{plaintext}"
+                                    yield message.plain_result(response).use_t2i(False)
+                                    return
+                                else:
+                                    # 结果格式异常，仍返回解密结果
+                                    logger.warning(f"AI审核结果格式异常：{ai_result}")
+                                    response = f"解密成功！\n\n内容：{plaintext}"
+                                    yield message.plain_result(response).use_t2i(False)
+                                    return
+                            except Exception as parse_e:
+                                # 解析AI结果失败，仍返回解密结果
+                                logger.error(f"解析AI审核结果时发生错误：{parse_e}")
+                                response = f"解密成功！\n\n内容：{plaintext}"
+                                yield message.plain_result(response).use_t2i(False)
+                                return
+                    except Exception as ai_e:
+                        # AI审核过程中发生异常，仍返回解密结果
+                        logger.error(f"AI审核过程中发生错误：{ai_e}")
+                        response = f"解密成功！\n\n内容：{plaintext}"
+                        yield message.plain_result(response).use_t2i(False)
+                        return
                     
                     # 返回解密结果
+                    response = f"解密成功！\n\n内容：{plaintext}"
                     yield message.plain_result(response).use_t2i(False)
                     return
                         
@@ -2682,11 +3209,12 @@ class Main(Star):
 
 【游戏相关】
 🎮 战力查询 <英雄名> - 查询王者荣耀英雄战力，显示四个战区数据
-🌍 mc服务器 <服务器地址> - 查询Minecraft服务器状态
+🌍 mcs <服务器地址> - 查询Minecraft服务器状态
 
 【生活服务】
 🗺️ 路线查询 <出发地> <目的地> - 查询城际路线
 ⛽ 油价查询 <城市名> - 查询指定城市油价
+🌤️ 天气 <城市名> - 查询指定城市天气
 💰 qq估价 <QQ号> - 查询QQ号估价
 
 【AI功能】
@@ -2710,6 +3238,8 @@ class Main(Star):
 解密 嗷～嗷啊
 AES加密 mykey Hello World
 AES解密 mykey <密文>
+天气 长沙
+mcs 121.com
 
 💡 所有命令支持群聊和私聊使用"""
         
