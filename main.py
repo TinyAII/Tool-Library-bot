@@ -2593,6 +2593,85 @@ class Main(Star):
             yield message.plain_result(f"请求AES加密时发生错误：{str(e)}").use_t2i(False)
             return
     
+    @filter.command("AES解密")
+    async def aes_decrypt(self, message: AstrMessageEvent):
+        """AES高级解密，支持多种模式和填充方式"""
+        # 提取命令参数
+        msg = message.message_str.replace("AES解密", "").strip()
+        
+        if not msg:
+            yield message.plain_result("缺少参数，正确示例：\n\nAES解密 解密密钥 加密内容").use_t2i(False)
+            return
+        
+        # 解析解密密钥和加密内容
+        parts = msg.split()
+        if len(parts) < 2:
+            yield message.plain_result("参数格式错误，请输入解密密钥和加密内容\n\n正确示例：\nAES解密 mykey fPtix07ODh3sn9evllHAqK/XYQXIamidUA22JL6zhg==").use_t2i(False)
+            return
+        
+        # 提取解密密钥和加密内容
+        key = parts[0]
+        ciphertext = " ".join(parts[1:])
+        
+        api_url = "https://uapis.cn/api/v1/text/aes/decrypt-advanced"
+        
+        try:
+            # 构造请求体
+            payload = {
+                "text": ciphertext,
+                "key": key,
+                "mode": "GCM",
+                "padding": "PKCS7"
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.post(api_url, json=payload) as resp:
+                    if resp.status != 200:
+                        raw_content = await resp.text()
+                        try:
+                            error_result = json.loads(raw_content)
+                            error_msg = error_result.get("error", f"服务器返回错误状态码：{resp.status}")
+                        except json.JSONDecodeError:
+                            error_msg = f"服务器返回错误状态码：{resp.status}"
+                        yield message.plain_result(f"AES解密失败：{error_msg}").use_t2i(False)
+                        return
+                    
+                    # 读取响应文本，解析JSON
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
+                    
+                    # 提取解密结果
+                    plaintext = result.get("plaintext", "")
+                    
+                    if plaintext is None or plaintext == "":
+                        yield message.plain_result("AES解密失败：返回结果为空").use_t2i(False)
+                        return
+                    
+                    # 构造响应消息
+                    response = f"解密成功！\n\n内容：{plaintext}"
+                    
+                    # 返回解密结果
+                    yield message.plain_result(response).use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result(f"无法连接到AES解密服务器：{str(e)}").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求AES解密时发生错误：{e}")
+            yield message.plain_result(f"请求AES解密时发生错误：{str(e)}").use_t2i(False)
+            return
+    
     @filter.command("工具箱菜单")
     async def toolbox_menu(self, message: AstrMessageEvent):
         """显示工具箱插件的所有可用命令"""
@@ -2616,6 +2695,7 @@ class Main(Star):
 【网络工具】
 🌐 代理ip - 获取socks5代理IP
 🔒 AES加密 <密钥> <内容> - 高级AES加密
+🔓 AES解密 <密钥> <密文> - 高级AES解密
 
 【娱乐功能】
 ✨ 星座运势 <星座名> - 查询星座运势图片
@@ -2629,6 +2709,7 @@ class Main(Star):
 加密 121
 解密 嗷～嗷啊
 AES加密 mykey Hello World
+AES解密 mykey <密文>
 
 💡 所有命令支持群聊和私聊使用"""
         
