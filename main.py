@@ -2684,8 +2684,8 @@ class Main(Star):
                     
                     jixiong_data = jixiong_result.get("data", {})
                 
-                # 3. 调用DeepSeek-3.2API进行综合分析
-                ai_api_url = "https://api.jkyai.top/API/depsek3.2.php"
+                # 3. 调用DeepSeek-3.1API进行综合分析
+                ai_api_url = "https://api.jkyai.top/API/depsek3.1.php"
                 ai_system_prompt = "QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n请仅基于以下数据进行分析：\nQQ号码：{qq_number}\nQQ估价：{valuation}元\nQQ特点：{law}\nQQ数字特征：{digit}\nQQ吉凶：{jixiong_nature}\nQQ数理：{jixiong_number}\nQQ吉凶名称：{jixiong_title}\nQQ吉凶含义：{jixiong_meaning}\n\n输出格式要求：\n估价：XXXX元\n特点评估：\n吉凶评估：\n总评估："
                 
                 ai_prompt = ai_system_prompt.format(
