@@ -832,7 +832,7 @@ class Main(Star):
                 color: #333;
             }
             .container {
-                max-width: 800px;
+                max-width: 700px;
                 margin: 0 auto;
                 background-color: white;
                 border-radius: 15px;
@@ -884,8 +884,8 @@ class Main(Star):
             }
             .info-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 20px;
+                grid-template-columns: 1fr;
+                gap: 15px;
                 margin: 30px 0;
             }
             .info-item {
@@ -895,76 +895,69 @@ class Main(Star):
                 box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             }
             .info-label {
-                font-size: 14px;
+                font-size: 16px;
                 color: #7f8c8d;
                 margin-bottom: 10px;
                 text-transform: uppercase;
                 letter-spacing: 1px;
+                font-weight: bold;
             }
             .info-value {
                 font-size: 18px;
-                font-weight: bold;
                 color: #2c3e50;
-            }
-            .section-title {
-                font-size: 24px;
-                font-weight: bold;
-                color: #667eea;
-                margin: 30px 0 20px 0;
-                padding-bottom: 10px;
-                border-bottom: 2px solid #667eea;
-            }
-            .divination-section {
-                background-color: #e8f5e8;
-                padding: 25px;
-                border-radius: 10px;
-                margin: 30px 0;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            }
-            .divination-item {
-                margin: 15px 0;
-                padding: 15px;
-                background-color: white;
-                border-radius: 8px;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-            }
-            .divination-label {
-                font-size: 16px;
-                font-weight: bold;
-                color: #2e7d32;
-                margin-bottom: 8px;
-            }
-            .divination-value {
-                font-size: 18px;
-                color: #333;
-            }
-            .assessment-section {
-                background-color: #e3f2fd;
-                padding: 25px;
-                border-radius: 10px;
-                margin: 30px 0;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            }
-            .assessment-item {
-                margin: 15px 0;
-                padding: 15px;
-                background-color: white;
-                border-radius: 8px;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-            }
-            .assessment-label {
-                font-size: 16px;
-                font-weight: bold;
-                color: #1976d2;
-                margin-bottom: 8px;
-            }
-            .assessment-value {
-                font-size: 18px;
-                color: #333;
                 line-height: 1.8;
             }
+            .jixiong-section {
+                margin: 30px 0;
+                padding: 20px;
+                background-color: #e3f2fd;
+                border-radius: 10px;
+                border-left: 5px solid #2196f3;
+            }
+            .jixiong-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: #1976d2;
+                margin-bottom: 15px;
+            }
+            .jixiong-content {
+                font-size: 16px;
+                line-height: 1.8;
+                color: #333;
+            }
+            .analysis-section {
+                margin: 30px 0;
+                padding: 25px;
+                background-color: #f3e5f5;
+                border-radius: 10px;
+                border-left: 5px solid #9c27b0;
+            }
+            .analysis-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: #7b1fa2;
+                margin-bottom: 20px;
+            }
+            .analysis-item {
+                margin: 15px 0;
+                padding: 15px;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .analysis-label {
+                font-size: 16px;
+                font-weight: bold;
+                color: #6a1b9a;
+                margin-bottom: 8px;
+            }
+            .analysis-content {
+                font-size: 16px;
+                line-height: 1.8;
+                color: #333;
+            }
             .footer {
-                margin-top: 40px;
+                margin-top: 30px;
                 text-align: center;
                 color: #95a5a6;
                 font-size: 14px;
@@ -982,9 +975,8 @@ class Main(Star):
             </div>
             <div class="valuation-info">
                 <div class="valuation-label">评估价值</div>
-                <div class="valuation-value">{{valuation}}</div>
+                <div class="valuation-value">{{valuation}}元</div>
             </div>
-            
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-label">特点</div>
@@ -994,49 +986,33 @@ class Main(Star):
                     <div class="info-label">数字特征</div>
                     <div class="info-value">{{digit}}</div>
                 </div>
-                <div class="info-item">
-                    <div class="info-label">QQ等级</div>
-                    <div class="info-value">{{qq_level}}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">会员状态</div>
-                    <div class="info-value">{{vip_status}}</div>
+            </div>
+            
+            <!-- QQ测吉凶结果 -->
+            <div class="jixiong-section">
+                <div class="jixiong-title">📊 QQ号码吉凶分析</div>
+                <div class="jixiong-content">
+                    <div style="margin-bottom: 10px;"><strong>吉凶：</strong>{{jixiong_nature}}</div>
+                    <div style="margin-bottom: 10px;"><strong>数理：</strong>{{jixiong_number}}</div>
+                    <div style="margin-bottom: 10px;"><strong>名称：</strong>{{jixiong_title}}</div>
+                    <div><strong>含义：</strong>{{jixiong_meaning}}</div>
                 </div>
             </div>
             
-            <h2 class="section-title">🔮 吉凶评估</h2>
-            <div class="divination-section">
-                <div class="divination-item">
-                    <div class="divination-label">吉凶数字</div>
-                    <div class="divination-value">{{divination_number}}</div>
+            <!-- AI综合分析 -->
+            <div class="analysis-section">
+                <div class="analysis-title">🤖 AI综合评估</div>
+                <div class="analysis-item">
+                    <div class="analysis-label">特点评估</div>
+                    <div class="analysis-content">{{analysis_features}}</div>
                 </div>
-                <div class="divination-item">
-                    <div class="divination-label">吉凶性质</div>
-                    <div class="divination-value">{{divination_nature}}</div>
+                <div class="analysis-item">
+                    <div class="analysis-label">吉凶评估</div>
+                    <div class="analysis-content">{{analysis_jixiong}}</div>
                 </div>
-                <div class="divination-item">
-                    <div class="divination-label">吉凶标题</div>
-                    <div class="divination-value">{{divination_title}}</div>
-                </div>
-                <div class="divination-item">
-                    <div class="divination-label">吉凶含义</div>
-                    <div class="divination-value">{{divination_meaning}}</div>
-                </div>
-            </div>
-            
-            <h2 class="section-title">📊 特点评估</h2>
-            <div class="assessment-section">
-                <div class="assessment-item">
-                    <div class="assessment-label">号码数字价值</div>
-                    <div class="assessment-value">{{feature_assessment}}</div>
-                </div>
-            </div>
-            
-            <h2 class="section-title">📋 总评估</h2>
-            <div class="assessment-section">
-                <div class="assessment-item">
-                    <div class="assessment-label">综合评估</div>
-                    <div class="assessment-value">{{total_assessment}}</div>
+                <div class="analysis-item">
+                    <div class="analysis-label">总评估</div>
+                    <div class="analysis-content">{{analysis_total}}</div>
                 </div>
             </div>
             
@@ -2656,7 +2632,7 @@ class Main(Star):
 
     @filter.command("qq估价")
     async def qq_valuation(self, message: AstrMessageEvent):
-        """查询指定QQ号的估价信息，整合QQ信息查询和QQ测吉凶数据"""
+        """查询指定QQ号的估价信息，包含吉凶分析和AI综合评估"""
         # 提取QQ号参数
         msg = message.message_str.replace("qq估价", "").strip()
         
@@ -2667,16 +2643,16 @@ class Main(Star):
         qq_number = msg.strip()
         
         try:
-            timeout = aiohttp.ClientTimeout(total=30)
+            timeout = aiohttp.ClientTimeout(total=60)  # 延长超时时间
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                # 1. 调用QQ估价API获取基础估价数据
-                valuation_api_url = "https://free.wqwlkj.cn/wqwlapi/qq_gj.php"
+                # 1. 查询QQ估价数据
+                valuation_api = "https://free.wqwlkj.cn/wqwlapi/qq_gj.php"
                 valuation_params = {
                     "qq": qq_number,
                     "type": "json"
                 }
                 
-                async with session.get(valuation_api_url, params=valuation_params) as valuation_resp:
+                async with session.get(valuation_api, params=valuation_params) as valuation_resp:
                     if valuation_resp.status != 200:
                         yield message.plain_result("请求QQ估价失败，服务器返回错误状态码").use_t2i(False)
                         return
@@ -2685,105 +2661,92 @@ class Main(Star):
                     valuation_result = json.loads(valuation_raw)
                     
                     if valuation_result.get("code") != 1:
-                        yield message.plain_result(f"查询失败：{valuation_result.get('msg', '未知错误')}").use_t2i(False)
+                        yield message.plain_result(f"QQ估价查询失败：{valuation_result.get('msg', '未知错误')}").use_t2i(False)
                         return
                 
-                # 2. 调用QQ测吉凶API获取吉凶数据
-                # 根据API文档，正确的URL格式应该是这样的
-                divination_api_url = "https://api.pearktrue.cn/api/qqjixiong"
-                divination_params = {
+                # 2. 查询QQ测吉凶数据
+                jixiong_api = "https://v2.xxapi.cn/api/qqjixiong"
+                jixiong_params = {
                     "qq": qq_number
                 }
-                async with session.get(divination_api_url, params=divination_params) as divination_resp:
-                    if divination_resp.status != 200:
-                        # 测吉凶API调用失败，使用默认值
-                        divination_result = {
-                            "data": {
-                                "meaning": "暂无数据",
-                                "nature": "吉",
-                                "number": "0",
-                                "title": "暂无数据"
-                            }
-                        }
-                    else:
-                        divination_raw = await divination_resp.text()
-                        try:
-                            divination_result = json.loads(divination_raw)
-                        except json.JSONDecodeError:
-                            # 解析失败，使用默认值
-                            divination_result = {
-                                "data": {
-                                    "meaning": "暂无数据",
-                                    "nature": "吉",
-                                    "number": "0",
-                                    "title": "暂无数据"
-                                }
-                            }
                 
-                # 3. 调用免费的QQ等级查询API获取QQ等级信息
-                # 使用一个免费的QQ等级查询API，或者生成模拟数据
-                # 这里使用模拟数据，根据QQ号长度生成合理的等级
-                qq_level = len(qq_number) * 5  # 根据QQ号长度生成模拟等级
-                qq_info = {
-                    "qqLevel": qq_level,
-                    "is_vip": False,
-                    "vip_level": 0,
-                    "is_years_vip": False
-                }
+                async with session.get(jixiong_api, params=jixiong_params) as jixiong_resp:
+                    if jixiong_resp.status != 200:
+                        yield message.plain_result("请求QQ测吉凶失败，服务器返回错误状态码").use_t2i(False)
+                        return
+                    
+                    jixiong_raw = await jixiong_resp.text()
+                    jixiong_result = json.loads(jixiong_raw)
+                    
+                    if jixiong_result.get("code") != 200:
+                        yield message.plain_result(f"QQ测吉凶查询失败：{jixiong_result.get('msg', '未知错误')}").use_t2i(False)
+                        return
+                    
+                    jixiong_data = jixiong_result.get("data", {})
                 
-                # 4. 准备数据发送给Deep3.2API进行分析
+                # 3. 调用DeepSeek-3.2API进行综合分析
                 ai_api_url = "https://api.jkyai.top/API/depsek3.2.php"
-                ai_system_prompt = "QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n任务：请对提供的QQ账号信息进行纯数据化估价分析。\n\n需提供的硬性数据清单：\n\nQQ号码：【填写完整号码，这是核心】\n\n账号等级：【如：2皇冠1太阳，或具体等级数字】\n\n会员状态：【如：SVIP8，到期时间/是否年费】\n\n其他付费服务：【如：QQ空间黄钻等级、音乐绿钻等】\n\n安全状态：【是否已绑定密保手机/卡、设置二代密保】\n\n请仅基于以下硬性维度进行分析：\n\n号码数字价值：\n\n长度：直接判断（如5-6位为稀有短号，7-8位为普通短号，9位及以上为普通号）。\n\n数字组合：客观识别是否为连号（如123456）、重复号（如AABB）、回文号（如12321）或含高需求数字（如6、8、9）。\n\n账号状态价值：\n\n根据 \"等级+VIP等级\" 组合直接判断其代表的投入时间和稀有度。\n\n\n输出格式要求：\n\n严格按照以下格式输出，不得添加任何额外内容：\n估价：XXXX元 - XXXX元\n特点评估：\n[特点评估内容，详细说明号码数字价值和账号状态价值]\n吉凶评估：\n[吉凶评估内容，基于提供的吉凶数据]\n总评估：\n[总评估内容，综合所有因素]\n\n请确保每个评估部分都有具体内容，不得为空！"
+                ai_system_prompt = "QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n请仅基于以下数据进行分析：\nQQ号码：{qq_number}\nQQ估价：{valuation}元\nQQ特点：{law}\nQQ数字特征：{digit}\nQQ吉凶：{jixiong_nature}\nQQ数理：{jixiong_number}\nQQ吉凶名称：{jixiong_title}\nQQ吉凶含义：{jixiong_meaning}\n\n输出格式要求：\n估价：XXXX元\n特点评估：\n吉凶评估：\n总评估："
                 
-                ai_question = f"{ai_system_prompt}\n\nQQ号码：{qq_number}\n账号等级：{qq_info['qqLevel']}\n会员状态：{'SVIP' + str(qq_info['vip_level']) if qq_info['is_vip'] else '普通用户'}\n其他付费服务：无\n安全状态：未知\n\n号码数字价值：{valuation_result.get('law', '')}，{valuation_result.get('digit', '')}\n账号状态价值：等级{qq_info['qqLevel']}，{'SVIP' + str(qq_info['vip_level']) if qq_info['is_vip'] else '普通用户'}\n\n吉凶评估：{divination_result['data']['title']}，{divination_result['data']['nature']}，{divination_result['data']['meaning']}"
+                ai_prompt = ai_system_prompt.format(
+                    qq_number=qq_number,
+                    valuation=valuation_result.get('valuation', 0),
+                    law=valuation_result.get('law', ''),
+                    digit=valuation_result.get('digit', ''),
+                    jixiong_nature=jixiong_data.get('nature', ''),
+                    jixiong_number=jixiong_data.get('number', ''),
+                    jixiong_title=jixiong_data.get('title', ''),
+                    jixiong_meaning=jixiong_data.get('meaning', '')
+                )
                 
                 ai_params = {
-                    "question": ai_question,
+                    "question": ai_prompt,
                     "type": "text"
                 }
                 
                 async with session.get(ai_api_url, params=ai_params) as ai_resp:
                     if ai_resp.status != 200:
-                        # AI分析失败，使用默认值
-                        base_valuation = valuation_result.get('valuation', 0)
-                        ai_analysis = {
-                            "valuation": f"{base_valuation}元",
-                            "feature_assessment": f"1. 号码数字价值：{valuation_result.get('law', '')}，{valuation_result.get('digit', '')}\n2. 账号状态价值：等级{qq_info['qqLevel']}，{'SVIP' + str(qq_info['vip_level']) if qq_info['is_vip'] else '普通用户'}",
-                            "total_assessment": f"该QQ号{qq_number}的市场参考价约为{base_valuation}元。账号等级为{qq_info['qqLevel']}，属于普通用户，号码特点为{valuation_result.get('law', '')}，{valuation_result.get('digit', '')}。"
-                        }
+                        yield message.plain_result("AI分析服务不可用，请稍后重试").use_t2i(False)
+                        return
+                    
+                    ai_analysis = await ai_resp.text()
+                    ai_analysis = ai_analysis.strip()
+                
+                # 4. 解析AI分析结果
+                analysis_features = ""
+                analysis_jixiong = ""
+                analysis_total = ""
+                valuation_from_ai = str(valuation_result.get('valuation', 0))
+                
+                # 提取各部分分析结果
+                lines = ai_analysis.split('\n')
+                current_section = ""
+                
+                for line in lines:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    
+                    if line.startswith("估价："):
+                        valuation_from_ai = line.replace("估价：", "").strip()
+                    elif line.startswith("特点评估："):
+                        current_section = "features"
+                    elif line.startswith("吉凶评估："):
+                        current_section = "jixiong"
+                    elif line.startswith("总评估："):
+                        current_section = "total"
                     else:
-                        ai_result = await ai_resp.text()
-                        ai_result = ai_result.strip()
-                        
-                        # 解析AI分析结果
-                        ai_analysis = {
-                            "valuation": valuation_result.get('valuation', 0) + "元",
-                            "feature_assessment": "暂无评估",
-                            "total_assessment": "暂无评估"
-                        }
-                        
-                        # 提取估价范围
-                        import re
-                        valuation_match = re.search(r'估价：(.*?)(\n|$)', ai_result)
-                        if valuation_match:
-                            ai_analysis['valuation'] = valuation_match.group(1)
-                        
-                        # 提取特点评估
-                        feature_match = re.search(r'特点评估：\n(.*?)(\n吉凶评估：|$)', ai_result, re.DOTALL)
-                        if feature_match:
-                            ai_analysis['feature_assessment'] = feature_match.group(1).strip()
-                        else:
-                            # 如果没有匹配到，使用默认的特点评估
-                            ai_analysis['feature_assessment'] = f"1. 号码数字价值：{valuation_result.get('law', '')}，{valuation_result.get('digit', '')}\n2. 账号状态价值：等级{qq_info['qqLevel']}，{'SVIP' + str(qq_info['vip_level']) if qq_info['is_vip'] else '普通用户'}"
-                        
-                        # 提取总评估
-                        total_match = re.search(r'总评估：\n(.*)', ai_result, re.DOTALL)
-                        if total_match:
-                            ai_analysis['total_assessment'] = total_match.group(1).strip()
-                        else:
-                            # 如果没有匹配到，使用默认的总评估
-                            base_valuation = valuation_result.get('valuation', 0)
-                            ai_analysis['total_assessment'] = f"该QQ号{qq_number}的市场参考价约为{base_valuation}元。账号等级为{qq_info['qqLevel']}，属于普通用户，号码特点为{valuation_result.get('law', '')}，{valuation_result.get('digit', '')}。"
+                        if current_section == "features":
+                            analysis_features += line + "\n"
+                        elif current_section == "jixiong":
+                            analysis_jixiong += line + "\n"
+                        elif current_section == "total":
+                            analysis_total += line + "\n"
+                
+                # 去除多余换行
+                analysis_features = analysis_features.strip()
+                analysis_jixiong = analysis_jixiong.strip()
+                analysis_total = analysis_total.strip()
                 
                 # 5. 获取当前时间，用于显示在图片中
                 current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
@@ -2791,17 +2754,16 @@ class Main(Star):
                 # 6. 准备模板数据
                 template_data = {
                     "qq_number": valuation_result.get('qq', qq_number),
-                    "valuation": ai_analysis['valuation'],
+                    "valuation": valuation_from_ai,
                     "law": valuation_result.get('law', ''),
                     "digit": valuation_result.get('digit', ''),
-                    "qq_level": str(qq_info['qqLevel']),
-                    "vip_status": 'SVIP' + str(qq_info['vip_level']) if qq_info['is_vip'] else '普通用户',
-                    "divination_number": divination_result['data']['number'],
-                    "divination_nature": divination_result['data']['nature'],
-                    "divination_title": divination_result['data']['title'],
-                    "divination_meaning": divination_result['data']['meaning'],
-                    "feature_assessment": ai_analysis['feature_assessment'],
-                    "total_assessment": ai_analysis['total_assessment'],
+                    "jixiong_nature": jixiong_data.get('nature', ''),
+                    "jixiong_number": jixiong_data.get('number', ''),
+                    "jixiong_title": jixiong_data.get('title', ''),
+                    "jixiong_meaning": jixiong_data.get('meaning', ''),
+                    "analysis_features": analysis_features,
+                    "analysis_jixiong": analysis_jixiong,
+                    "analysis_total": analysis_total,
                     "current_time": current_time
                 }
                 
@@ -2831,7 +2793,7 @@ class Main(Star):
                         
         except aiohttp.ClientError as e:
             logger.error(f"网络连接错误：{e}")
-            yield message.plain_result(f"无法连接到服务器，请稍后重试：{str(e)}").use_t2i(False)
+            yield message.plain_result(f"网络连接错误：{str(e)}").use_t2i(False)
             return
         except asyncio.TimeoutError:
             logger.error("请求超时")
