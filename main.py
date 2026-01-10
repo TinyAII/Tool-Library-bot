@@ -1326,6 +1326,100 @@ class Main(Star):
     </html>
     '''
     
+    # 历史上的今天结果的HTML模板
+    HISTORICAL_EVENTS_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>历史上的今天</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+                margin: 0;
+                padding: 30px;
+                line-height: 1.8;
+                color: #333;
+            }
+            .container {
+                max-width: 900px;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 15px;
+                padding: 40px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            }
+            .title {
+                font-size: 36px;
+                font-weight: bold;
+                text-align: center;
+                color: #8B0000;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .header-info {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background-color: #FFF8DC;
+                border-radius: 10px;
+                border: 2px solid #FFD700;
+            }
+            .current-date {
+                font-size: 24px;
+                font-weight: bold;
+                color: #8B0000;
+                margin-bottom: 10px;
+            }
+            .events-count {
+                font-size: 18px;
+                color: #666;
+            }
+            .events-list {
+                margin: 30px 0;
+            }
+            .event-item {
+                font-size: 16px;
+                line-height: 1.8;
+                margin: 15px 0;
+                padding: 15px;
+                background-color: #F5F5F5;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border-left: 4px solid #FFD700;
+            }
+            .footer {
+                margin-top: 40px;
+                text-align: center;
+                color: #95a5a6;
+                font-size: 14px;
+                padding-top: 20px;
+                border-top: 1px solid #ecf0f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">📜 历史上的今天 📜</h1>
+            <div class="header-info">
+                <div class="current-date">{{current_date}}</div>
+                <div class="events-count">共 {{events_count}} 条历史事件</div>
+            </div>
+            
+            <div class="events-list">
+                {{events_html}}
+            </div>
+            
+            <div class="footer">
+                查询时间：{{current_time}} | 数据来源：专业历史事件服务
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
     # 星座运势结果的HTML模板
     CONSTELLATION_FORTUNE_TEMPLATE = '''
     <!DOCTYPE html>
@@ -2893,6 +2987,89 @@ class Main(Star):
             logger.error(f"请求实时科技资讯时发生错误：{e}")
             yield message.plain_result(f"请求实时科技资讯时发生错误：{str(e)}").use_t2i(False)
             return
+    
+    @filter.command("历史上的今天")
+    async def historical_events(self, message: AstrMessageEvent):
+        """获取历史上的今天发生的事件，显示为图片"""
+        api_url = "https://api.pearktrue.cn/api/lsjt/"
+        
+        try:
+            # 构造请求参数
+            params = {
+                "type": "json"
+            }
+            
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(api_url, params=params) as resp:
+                    if resp.status != 200:
+                        yield message.plain_result(f"请求历史上的今天失败，服务器返回错误状态码 {resp.status}").use_t2i(False)
+                        return
+                    
+                    # 读取响应文本，解析JSON
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
+                    
+                    # 检查API返回是否成功
+                    if result.get("code") != 200:
+                        yield message.plain_result(f"历史上的今天获取失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                        return
+                    
+                    # 获取当前时间，用于显示在图片中
+                    current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    # 准备模板数据
+                    current_date = result.get("time", "")
+                    events = result.get("data", [])
+                    events_count = str(len(events))
+                    
+                    # 生成历史事件列表HTML
+                    events_html = ""
+                    for event in events:
+                        if isinstance(event, str) and event.strip():
+                            events_html += f'<div class="event-item">{event}</div>'
+                    
+                    # 渲染HTML模板
+                    html_content = self.HISTORICAL_EVENTS_TEMPLATE
+                    html_content = html_content.replace("{{current_date}}", current_date)
+                    html_content = html_content.replace("{{events_count}}", events_count)
+                    html_content = html_content.replace("{{events_html}}", events_html)
+                    html_content = html_content.replace("{{current_time}}", current_time)
+                    
+                    # 使用html_render函数生成图片
+                    options = {
+                        "full_page": True,
+                        "type": "jpeg",
+                        "quality": 95,
+                    }
+                    
+                    image_url = await self.html_render(
+                        html_content,  # 渲染后的HTML内容
+                        {},  # 空数据字典
+                        True,  # 返回URL
+                        options  # 图片生成选项
+                    )
+                    
+                    # 返回图片结果
+                    yield message.image_result(image_url).use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result(f"无法连接到历史事件服务器：{str(e)}").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求历史上的今天时发生错误：{e}")
+            yield message.plain_result(f"请求历史上的今天时发生错误：{str(e)}").use_t2i(False)
+            return
 
     @filter.command("加密")
     async def shouyu_encrypt(self, message: AstrMessageEvent):
@@ -3398,6 +3575,7 @@ class Main(Star):
 ⛽ 油价查询 <城市名> - 查询指定城市油价
 🌤️ 天气 <城市名> - 查询指定城市天气
 💰 qq估价 <QQ号> - 查询QQ号估价
+📜 历史上的今天 - 查询历史上的今天发生的事件
 
 【AI功能】
 🎨 绘画 <提示词> - AI绘画生成
