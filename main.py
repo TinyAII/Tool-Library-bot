@@ -2713,40 +2713,53 @@ class Main(Star):
                     ai_analysis = ai_analysis.strip()
                 
                 # 4. 解析AI分析结果
-                analysis_features = ""
-                analysis_jixiong = ""
-                analysis_total = ""
+                analysis_features = "无"
+                analysis_jixiong = "无"
+                analysis_total = "无"
                 valuation_from_ai = str(valuation_result.get('valuation', 0))
                 
-                # 提取各部分分析结果
-                lines = ai_analysis.split('\n')
-                current_section = ""
-                
-                for line in lines:
-                    line = line.strip()
-                    if not line:
-                        continue
+                try:
+                    # 提取各部分分析结果
+                    lines = ai_analysis.split('\n')
+                    current_section = ""
                     
-                    if line.startswith("估价："):
-                        valuation_from_ai = line.replace("估价：", "").strip()
-                    elif line.startswith("特点评估："):
-                        current_section = "features"
-                    elif line.startswith("吉凶评估："):
-                        current_section = "jixiong"
-                    elif line.startswith("总评估："):
-                        current_section = "total"
-                    else:
-                        if current_section == "features":
-                            analysis_features += line + "\n"
-                        elif current_section == "jixiong":
-                            analysis_jixiong += line + "\n"
-                        elif current_section == "total":
-                            analysis_total += line + "\n"
-                
-                # 去除多余换行
-                analysis_features = analysis_features.strip()
-                analysis_jixiong = analysis_jixiong.strip()
-                analysis_total = analysis_total.strip()
+                    for line in lines:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        
+                        if line.startswith("估价："):
+                            valuation_from_ai = line.replace("估价：", "").strip()
+                        elif line.startswith("特点评估："):
+                            current_section = "features"
+                        elif line.startswith("吉凶评估："):
+                            current_section = "jixiong"
+                        elif line.startswith("总评估："):
+                            current_section = "total"
+                        else:
+                            if current_section == "features":
+                                analysis_features += line + "\n"
+                            elif current_section == "jixiong":
+                                analysis_jixiong += line + "\n"
+                            elif current_section == "total":
+                                analysis_total += line + "\n"
+                    
+                    # 去除多余换行
+                    analysis_features = analysis_features.strip() if analysis_features.strip() else "无"
+                    analysis_jixiong = analysis_jixiong.strip() if analysis_jixiong.strip() else "无"
+                    analysis_total = analysis_total.strip() if analysis_total.strip() else "无"
+                    
+                    # 如果所有分析都为空，使用默认值
+                    if analysis_features == "" and analysis_jixiong == "" and analysis_total == "":
+                        analysis_features = "根据QQ号码特点进行了综合评估"
+                        analysis_jixiong = "根据81数理进行了吉凶分析"
+                        analysis_total = "综合考虑各项因素给出了最终估价"
+                except Exception as parse_e:
+                    logger.error(f"解析AI分析结果时发生错误：{parse_e}")
+                    # 解析失败时使用默认值
+                    analysis_features = "AI分析结果解析失败"
+                    analysis_jixiong = "AI分析结果解析失败"
+                    analysis_total = "AI分析结果解析失败"
                 
                 # 5. 获取当前时间，用于显示在图片中
                 current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
