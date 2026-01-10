@@ -1225,6 +1225,107 @@ class Main(Star):
     </html>
     '''
     
+    # 实时科技资讯的HTML模板
+    TECH_NEWS_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>实时科技资讯</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                margin: 0;
+                padding: 30px;
+                line-height: 1.6;
+                color: #333;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 15px;
+                padding: 40px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            }
+            .title {
+                font-size: 32px;
+                font-weight: bold;
+                text-align: center;
+                color: #667eea;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .header-info {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background-color: #f0f8ff;
+                border-radius: 10px;
+            }
+            .update-time {
+                font-size: 14px;
+                color: #7f8c8d;
+                margin-bottom: 10px;
+            }
+            .news-count {
+                font-size: 18px;
+                font-weight: bold;
+                color: #667eea;
+            }
+            .news-list {
+                margin: 20px 0;
+            }
+            .news-item {
+                font-size: 16px;
+                line-height: 1.8;
+                margin: 15px 0;
+                padding: 15px;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border-left: 4px solid #667eea;
+            }
+            .news-time {
+                font-weight: bold;
+                color: #667eea;
+                margin-right: 15px;
+            }
+            .news-title {
+                color: #333;
+            }
+            .footer {
+                margin-top: 40px;
+                text-align: center;
+                color: #95a5a6;
+                font-size: 14px;
+                padding-top: 20px;
+                border-top: 1px solid #ecf0f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">📱 实时科技资讯 📱</h1>
+            <div class="header-info">
+                <div class="update-time">更新时间：{{update_time}}</div>
+                <div class="news-count">共 {{news_count}} 条资讯</div>
+            </div>
+            
+            <div class="news-list">
+                {{news_items}}
+            </div>
+            
+            <div class="footer">
+                查询时间：{{current_time}} | 数据来源：专业科技资讯服务
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
     # 星座运势结果的HTML模板
     CONSTELLATION_FORTUNE_TEMPLATE = '''
     <!DOCTYPE html>
@@ -2711,6 +2812,87 @@ class Main(Star):
             logger.error(f"请求天气查询时发生错误：{e}")
             yield message.plain_result(f"请求天气查询时发生错误：{str(e)}").use_t2i(False)
             return
+    
+    @filter.command("实时科技资讯")
+    async def tech_news(self, message: AstrMessageEvent):
+        """获取实时科技资讯，显示最新科技新闻"""
+        api_url = "https://api.pearktrue.cn/api/sciencenews/"
+        
+        try:
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(api_url) as resp:
+                    if resp.status != 200:
+                        yield message.plain_result(f"请求实时科技资讯失败，服务器返回错误状态码 {resp.status}").use_t2i(False)
+                        return
+                    
+                    # 读取响应文本，解析JSON
+                    raw_content = await resp.text()
+                    result = json.loads(raw_content)
+                    
+                    # 检查API返回是否成功
+                    if result.get("code") != 200:
+                        yield message.plain_result(f"实时科技资讯获取失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                        return
+                    
+                    # 获取当前时间，用于显示在图片中
+                    current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    # 准备模板数据
+                    update_time = result.get("更新", "")
+                    news_count = result.get("伯爵", "0")
+                    
+                    # 生成新闻列表HTML
+                    news_items = result.get("数据", [])
+                    news_html = ""
+                    for news in news_items:
+                        if isinstance(news, dict):
+                            news_time = news.get("time", "")
+                            news_title = news.get("title", "")
+                            if news_title:
+                                news_html += f'<div class="news-item"><span class="news-time">{news_time}</span><span class="news-title">{news_title}</span></div>'
+                    
+                    # 渲染HTML模板
+                    html_content = self.TECH_NEWS_TEMPLATE
+                    html_content = html_content.replace("{{update_time}}", update_time)
+                    html_content = html_content.replace("{{news_count}}", news_count)
+                    html_content = html_content.replace("{{news_items}}", news_html)
+                    html_content = html_content.replace("{{current_time}}", current_time)
+                    
+                    # 使用html_render函数生成图片
+                    options = {
+                        "full_page": True,
+                        "type": "jpeg",
+                        "quality": 95,
+                    }
+                    
+                    image_url = await self.html_render(
+                        html_content,  # 渲染后的HTML内容
+                        {},  # 空数据字典
+                        True,  # 返回URL
+                        options  # 图片生成选项
+                    )
+                    
+                    # 返回图片结果
+                    yield message.image_result(image_url).use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result(f"无法连接到科技资讯服务器：{str(e)}").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求实时科技资讯时发生错误：{e}")
+            yield message.plain_result(f"请求实时科技资讯时发生错误：{str(e)}").use_t2i(False)
+            return
 
     @filter.command("加密")
     async def shouyu_encrypt(self, message: AstrMessageEvent):
@@ -3227,6 +3409,7 @@ class Main(Star):
 
 【娱乐功能】
 ✨ 星座运势 <星座名> - 查询星座运势图片
+📱 实时科技资讯 - 获取最新科技新闻图片
 🔒 加密 <内容> - 兽语在线加密
 🔓 解密 <内容> - 兽语在线解密（含AI安全审核）
 
