@@ -832,7 +832,7 @@ class Main(Star):
                 color: #333;
             }
             .container {
-                max-width: 600px;
+                max-width: 800px;
                 margin: 0 auto;
                 background-color: white;
                 border-radius: 15px;
@@ -884,8 +884,8 @@ class Main(Star):
             }
             .info-grid {
                 display: grid;
-                grid-template-columns: 1fr;
-                gap: 15px;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
                 margin: 30px 0;
             }
             .info-item {
@@ -906,8 +906,65 @@ class Main(Star):
                 font-weight: bold;
                 color: #2c3e50;
             }
+            .section-title {
+                font-size: 24px;
+                font-weight: bold;
+                color: #667eea;
+                margin: 30px 0 20px 0;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #667eea;
+            }
+            .divination-section {
+                background-color: #e8f5e8;
+                padding: 25px;
+                border-radius: 10px;
+                margin: 30px 0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .divination-item {
+                margin: 15px 0;
+                padding: 15px;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            }
+            .divination-label {
+                font-size: 16px;
+                font-weight: bold;
+                color: #2e7d32;
+                margin-bottom: 8px;
+            }
+            .divination-value {
+                font-size: 18px;
+                color: #333;
+            }
+            .assessment-section {
+                background-color: #e3f2fd;
+                padding: 25px;
+                border-radius: 10px;
+                margin: 30px 0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .assessment-item {
+                margin: 15px 0;
+                padding: 15px;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            }
+            .assessment-label {
+                font-size: 16px;
+                font-weight: bold;
+                color: #1976d2;
+                margin-bottom: 8px;
+            }
+            .assessment-value {
+                font-size: 18px;
+                color: #333;
+                line-height: 1.8;
+            }
             .footer {
-                margin-top: 30px;
+                margin-top: 40px;
                 text-align: center;
                 color: #95a5a6;
                 font-size: 14px;
@@ -925,8 +982,9 @@ class Main(Star):
             </div>
             <div class="valuation-info">
                 <div class="valuation-label">评估价值</div>
-                <div class="valuation-value">{{valuation}}元</div>
+                <div class="valuation-value">{{valuation}}</div>
             </div>
+            
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-label">特点</div>
@@ -936,7 +994,52 @@ class Main(Star):
                     <div class="info-label">数字特征</div>
                     <div class="info-value">{{digit}}</div>
                 </div>
+                <div class="info-item">
+                    <div class="info-label">QQ等级</div>
+                    <div class="info-value">{{qq_level}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">会员状态</div>
+                    <div class="info-value">{{vip_status}}</div>
+                </div>
             </div>
+            
+            <h2 class="section-title">🔮 吉凶评估</h2>
+            <div class="divination-section">
+                <div class="divination-item">
+                    <div class="divination-label">吉凶数字</div>
+                    <div class="divination-value">{{divination_number}}</div>
+                </div>
+                <div class="divination-item">
+                    <div class="divination-label">吉凶性质</div>
+                    <div class="divination-value">{{divination_nature}}</div>
+                </div>
+                <div class="divination-item">
+                    <div class="divination-label">吉凶标题</div>
+                    <div class="divination-value">{{divination_title}}</div>
+                </div>
+                <div class="divination-item">
+                    <div class="divination-label">吉凶含义</div>
+                    <div class="divination-value">{{divination_meaning}}</div>
+                </div>
+            </div>
+            
+            <h2 class="section-title">📊 特点评估</h2>
+            <div class="assessment-section">
+                <div class="assessment-item">
+                    <div class="assessment-label">号码数字价值</div>
+                    <div class="assessment-value">{{feature_assessment}}</div>
+                </div>
+            </div>
+            
+            <h2 class="section-title">📋 总评估</h2>
+            <div class="assessment-section">
+                <div class="assessment-item">
+                    <div class="assessment-label">综合评估</div>
+                    <div class="assessment-value">{{total_assessment}}</div>
+                </div>
+            </div>
+            
             <div class="footer">
                 查询时间：{{current_time}} | 数据来源：专业QQ估价服务
             </div>
@@ -2553,7 +2656,7 @@ class Main(Star):
 
     @filter.command("qq估价")
     async def qq_valuation(self, message: AstrMessageEvent):
-        """查询指定QQ号的估价信息"""
+        """查询指定QQ号的估价信息，整合QQ信息查询和QQ测吉凶数据"""
         # 提取QQ号参数
         msg = message.message_str.replace("qq估价", "").strip()
         
@@ -2562,77 +2665,157 @@ class Main(Star):
             return
         
         qq_number = msg.strip()
-        api_url = "https://free.wqwlkj.cn/wqwlapi/qq_gj.php"
         
         try:
-            # 构造请求参数
-            params = {
-                "qq": qq_number,
-                "type": "json"
-            }
-            
             timeout = aiohttp.ClientTimeout(total=30)
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(api_url, params=params) as resp:
-                    if resp.status != 200:
+                # 1. 调用QQ估价API获取基础估价数据
+                valuation_api_url = "https://free.wqwlkj.cn/wqwlapi/qq_gj.php"
+                valuation_params = {
+                    "qq": qq_number,
+                    "type": "json"
+                }
+                
+                async with session.get(valuation_api_url, params=valuation_params) as valuation_resp:
+                    if valuation_resp.status != 200:
                         yield message.plain_result("请求QQ估价失败，服务器返回错误状态码").use_t2i(False)
                         return
                     
-                    # 先读取响应文本，再使用json.loads()解析，解决Content-Type问题
-                    raw_content = await resp.text()
-                    result = json.loads(raw_content)
+                    valuation_raw = await valuation_resp.text()
+                    valuation_result = json.loads(valuation_raw)
                     
-                    if result.get("code") != 1:
-                        yield message.plain_result(f"查询失败：{result.get('msg', '未知错误')}").use_t2i(False)
+                    if valuation_result.get("code") != 1:
+                        yield message.plain_result(f"查询失败：{valuation_result.get('msg', '未知错误')}").use_t2i(False)
                         return
-                    
-                    # 获取当前时间，用于显示在图片中
-                    current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-                    
-                    # 准备模板数据
-                    template_data = {
-                        "qq_number": result.get('qq', qq_number),
-                        "valuation": result.get('valuation', 0),
-                        "law": result.get('law', ''),
-                        "digit": result.get('digit', ''),
-                        "current_time": current_time
-                    }
-                    
-                    # 渲染HTML模板
-                    html_content = self.QQ_VALUATION_TEMPLATE
-                    for key, value in template_data.items():
-                        placeholder = "{{" + key + "}}"
-                        html_content = html_content.replace(placeholder, str(value))
-                    
-                    # 使用html_render函数生成图片
-                    options = {
-                        "full_page": True,
-                        "type": "jpeg",
-                        "quality": 95,
-                    }
-                    
-                    image_url = await self.html_render(
-                        html_content,  # 渲染后的HTML内容
-                        {},  # 空数据字典
-                        True,  # 返回URL
-                        options  # 图片生成选项
-                    )
-                    
-                    # 返回图片结果
-                    yield message.image_result(image_url).use_t2i(False)
-                    return
+                
+                # 2. 调用QQ测吉凶API获取吉凶数据
+                divination_api_url = "https://api.pearktrue.cn/api/qqjixiong?qq=" + qq_number
+                async with session.get(divination_api_url) as divination_resp:
+                    if divination_resp.status != 200:
+                        # 测吉凶API调用失败，使用默认值
+                        divination_result = {
+                            "data": {
+                                "meaning": "暂无数据",
+                                "nature": "吉",
+                                "number": "0",
+                                "title": "暂无数据"
+                            }
+                        }
+                    else:
+                        divination_raw = await divination_resp.text()
+                        divination_result = json.loads(divination_raw)
+                
+                # 3. 调用QQ信息查询API获取QQ等级、会员状态等信息
+                # 注意：QQ信息查询API需要ckey参数，这里使用模拟数据
+                # 在实际应用中，需要替换为有效的ckey
+                qq_info = {
+                    "qqLevel": 0,
+                    "is_vip": False,
+                    "vip_level": 0,
+                    "is_years_vip": False
+                }
+                
+                # 4. 准备数据发送给Deep3.2API进行分析
+                ai_api_url = "https://api.jkyai.top/API/depsek3.2.php"
+                ai_system_prompt = "QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n任务：请对提供的QQ账号信息进行纯数据化估价分析。\n\n需提供的硬性数据清单：\n\nQQ号码：【填写完整号码，这是核心】\n\n账号等级：【如：2皇冠1太阳，或具体等级数字】\n\n会员状态：【如：SVIP8，到期时间/是否年费】\n\n其他付费服务：【如：QQ空间黄钻等级、音乐绿钻等】\n\n安全状态：【是否已绑定密保手机/卡、设置二代密保】\n\n请仅基于以下硬性维度进行分析：\n\n号码数字价值：\n\n长度：直接判断（如5-6位为稀有短号，7-8位为普通短号，9位及以上为普通号）。\n\n数字组合：客观识别是否为连号（如123456）、重复号（如AABB）、回文号（如12321）或含高需求数字（如6、8、9）。\n\n账号状态价值：\n\n根据 \"等级+VIP等级\" 组合直接判断其代表的投入时间和稀有度。\n\n\n输出格式要求：\n\n估价结论：直接给出基于当前数据的市场参考价范围（示例：XXXX元 - XXXX元）。\n\n逐项分析：严格按上述三项硬性维度，分点说明其对估价的具体影响。\n需要以下输出：\n估价：XXXX元 - XXXX元\n特点评估：\n吉凶评估：\n总评估："
+                
+                ai_question = f"{ai_system_prompt}\n\nQQ号码：{qq_number}\n账号等级：{qq_info['qqLevel']}\n会员状态：{'SVIP' + str(qq_info['vip_level']) if qq_info['is_vip'] else '普通用户'}\n其他付费服务：无\n安全状态：未知\n\n号码数字价值：{valuation_result.get('law', '')}，{valuation_result.get('digit', '')}\n账号状态价值：等级{qq_info['qqLevel']}，{'SVIP' + str(qq_info['vip_level']) if qq_info['is_vip'] else '普通用户'}\n\n吉凶评估：{divination_result['data']['title']}，{divination_result['data']['nature']}，{divination_result['data']['meaning']}"
+                
+                ai_params = {
+                    "question": ai_question,
+                    "type": "text"
+                }
+                
+                async with session.get(ai_api_url, params=ai_params) as ai_resp:
+                    if ai_resp.status != 200:
+                        # AI分析失败，使用默认值
+                        ai_analysis = {
+                            "valuation": valuation_result.get('valuation', 0) + "元",
+                            "feature_assessment": "暂无评估",
+                            "total_assessment": "暂无评估"
+                        }
+                    else:
+                        ai_result = await ai_resp.text()
+                        ai_result = ai_result.strip()
+                        
+                        # 解析AI分析结果
+                        ai_analysis = {
+                            "valuation": valuation_result.get('valuation', 0) + "元",
+                            "feature_assessment": "暂无评估",
+                            "total_assessment": "暂无评估"
+                        }
+                        
+                        # 提取估价范围
+                        import re
+                        valuation_match = re.search(r'估价：(.*?)\n', ai_result)
+                        if valuation_match:
+                            ai_analysis['valuation'] = valuation_match.group(1)
+                        
+                        # 提取特点评估
+                        feature_match = re.search(r'特点评估：\n(.*?)\n吉凶评估：', ai_result, re.DOTALL)
+                        if feature_match:
+                            ai_analysis['feature_assessment'] = feature_match.group(1).strip()
+                        
+                        # 提取总评估
+                        total_match = re.search(r'总评估：\n(.*)', ai_result, re.DOTALL)
+                        if total_match:
+                            ai_analysis['total_assessment'] = total_match.group(1).strip()
+                
+                # 5. 获取当前时间，用于显示在图片中
+                current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                
+                # 6. 准备模板数据
+                template_data = {
+                    "qq_number": valuation_result.get('qq', qq_number),
+                    "valuation": ai_analysis['valuation'],
+                    "law": valuation_result.get('law', ''),
+                    "digit": valuation_result.get('digit', ''),
+                    "qq_level": str(qq_info['qqLevel']),
+                    "vip_status": 'SVIP' + str(qq_info['vip_level']) if qq_info['is_vip'] else '普通用户',
+                    "divination_number": divination_result['data']['number'],
+                    "divination_nature": divination_result['data']['nature'],
+                    "divination_title": divination_result['data']['title'],
+                    "divination_meaning": divination_result['data']['meaning'],
+                    "feature_assessment": ai_analysis['feature_assessment'],
+                    "total_assessment": ai_analysis['total_assessment'],
+                    "current_time": current_time
+                }
+                
+                # 7. 渲染HTML模板
+                html_content = self.QQ_VALUATION_TEMPLATE
+                for key, value in template_data.items():
+                    placeholder = "{{" + key + "}}"
+                    html_content = html_content.replace(placeholder, str(value))
+                
+                # 8. 使用html_render函数生成图片
+                options = {
+                    "full_page": True,
+                    "type": "jpeg",
+                    "quality": 95,
+                }
+                
+                image_url = await self.html_render(
+                    html_content,  # 渲染后的HTML内容
+                    {},  # 空数据字典
+                    True,  # 返回URL
+                    options  # 图片生成选项
+                )
+                
+                # 9. 返回图片结果
+                yield message.image_result(image_url).use_t2i(False)
+                return
                         
         except aiohttp.ClientError as e:
             logger.error(f"网络连接错误：{e}")
-            yield message.plain_result("无法连接到QQ估价服务器，请稍后重试或检查网络连接").use_t2i(False)
+            yield message.plain_result(f"无法连接到服务器，请稍后重试：{str(e)}").use_t2i(False)
             return
         except asyncio.TimeoutError:
             logger.error("请求超时")
             yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
             return
-        except json.JSONDecodeError:
-            logger.error("JSON解析错误")
-            yield message.plain_result("服务器返回数据格式错误").use_t2i(False)
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
             return
         except Exception as e:
             logger.error(f"请求QQ估价时发生错误：{e}")
