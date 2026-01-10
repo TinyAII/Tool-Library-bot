@@ -2686,7 +2686,7 @@ class Main(Star):
                 
                 # 3. 调用DeepSeek-3.1API进行综合分析
                 ai_api_url = "https://api.jkyai.top/API/depsek3.1.php"
-                ai_system_prompt = "QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n请仅基于以下数据进行分析：\nQQ号码：{qq_number}\nQQ估价：{valuation}元\nQQ特点：{law}\nQQ数字特征：{digit}\nQQ吉凶：{jixiong_nature}\nQQ数理：{jixiong_number}\nQQ吉凶名称：{jixiong_title}\nQQ吉凶含义：{jixiong_meaning}\n\n输出格式要求：\n估价：XXXX元\n特点评估：\n吉凶评估：\n总评估："
+                ai_system_prompt = "QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n请基于以下参考数据，独立给出QQ账号的最终估价和综合分析：\nQQ号码：{qq_number}\n参考估价：{valuation}元\nQQ特点：{law}\nQQ数字特征：{digit}\nQQ吉凶：{jixiong_nature}\nQQ数理：{jixiong_number}\nQQ吉凶名称：{jixiong_title}\nQQ吉凶含义：{jixiong_meaning}\n\n注意：\n1. 最终估价由你独立判断，参考估价仅作为参考\n2. 输出的估价部分请只包含数字，不要包含单位\n3. 严格按照以下格式输出，不要添加额外内容：\n估价：XXXX\n特点评估：\n吉凶评估：\n总评估："
                 
                 ai_prompt = ai_system_prompt.format(
                     qq_number=qq_number,
@@ -2713,9 +2713,9 @@ class Main(Star):
                     ai_analysis = ai_analysis.strip()
                 
                 # 4. 解析AI分析结果
-                analysis_features = "无"
-                analysis_jixiong = "无"
-                analysis_total = "无"
+                analysis_features = ""
+                analysis_jixiong = ""
+                analysis_total = ""
                 valuation_from_ai = str(valuation_result.get('valuation', 0))
                 
                 try:
@@ -2730,6 +2730,9 @@ class Main(Star):
                         
                         if line.startswith("估价："):
                             valuation_from_ai = line.replace("估价：", "").strip()
+                            # 移除可能包含的"元"字，避免重复显示
+                            if valuation_from_ai.endswith("元"):
+                                valuation_from_ai = valuation_from_ai[:-1]
                         elif line.startswith("特点评估："):
                             current_section = "features"
                         elif line.startswith("吉凶评估："):
@@ -2745,14 +2748,16 @@ class Main(Star):
                                 analysis_total += line + "\n"
                     
                     # 去除多余换行
-                    analysis_features = analysis_features.strip() if analysis_features.strip() else "无"
-                    analysis_jixiong = analysis_jixiong.strip() if analysis_jixiong.strip() else "无"
-                    analysis_total = analysis_total.strip() if analysis_total.strip() else "无"
+                    analysis_features = analysis_features.strip()
+                    analysis_jixiong = analysis_jixiong.strip()
+                    analysis_total = analysis_total.strip()
                     
-                    # 如果所有分析都为空，使用默认值
-                    if analysis_features == "" and analysis_jixiong == "" and analysis_total == "":
+                    # 设置默认值（仅当内容为空时）
+                    if not analysis_features:
                         analysis_features = "根据QQ号码特点进行了综合评估"
+                    if not analysis_jixiong:
                         analysis_jixiong = "根据81数理进行了吉凶分析"
+                    if not analysis_total:
                         analysis_total = "综合考虑各项因素给出了最终估价"
                 except Exception as parse_e:
                     logger.error(f"解析AI分析结果时发生错误：{parse_e}")
