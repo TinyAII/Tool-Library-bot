@@ -2887,25 +2887,41 @@ class Main(Star):
                 # 3. 调用DeepSeek-3.1API进行综合分析
                 ai_api_url = "https://api.jkyai.top/API/depsek3.1.php"
                 
-                # 分离系统提示词和实际问题
-                ai_system = "QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n注意：\n1. 最终估价由你独立判断，参考估价仅作为参考\n2. 输出的估价部分请只包含数字，不要包含单位\n3. 严格按照以下格式输出，不要添加额外内容：\n估价：XXXX\n特点评估：\n吉凶评估：\n总评估："
+                # 简化提示词，确保AI理解并按要求输出
+                ai_prompt = f"QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n请基于以下参考数据，独立给出QQ账号的最终估价和综合分析：\nQQ号码：{qq_number}\n参考估价：{valuation_result.get('valuation', 0)}元\nQQ特点：{valuation_result.get('law', '')}\nQQ数字特征：{valuation_result.get('digit', '')}\nQQ吉凶：{jixiong_data.get('nature', '')}\nQQ数理：{jixiong_data.get('number', '')}\nQQ吉凶名称：{jixiong_data.get('title', '')}\nQQ吉凶含义：{jixiong_data.get('meaning', '')}\n\n注意：\n1. 最终估价由你独立判断，参考估价仅作为参考\n2. 输出的估价部分请只包含数字，不要包含单位\n3. 严格按照以下格式输出，不要添加额外内容：\n估价：XXXX\n特点评估：\n吉凶评估：\n总评估："
                 
-                # 实际问题包含要分析的数据
-                ai_question = f"请基于以下参考数据，独立给出QQ账号的最终估价和综合分析：\nQQ号码：{qq_number}\n参考估价：{valuation_result.get('valuation', 0)}元\nQQ特点：{valuation_result.get('law', '')}\nQQ数字特征：{valuation_result.get('digit', '')}\nQQ吉凶：{jixiong_data.get('nature', '')}\nQQ数理：{jixiong_data.get('number', '')}\nQQ吉凶名称：{jixiong_data.get('title', '')}\nQQ吉凶含义：{jixiong_data.get('meaning', '')}"
-                
+                # 尝试使用JSON返回格式，这样可以更可靠地解析结果
                 ai_params = {
-                    "question": ai_question,
-                    "system": ai_system,
-                    "type": "text"
+                    "question": ai_prompt,
+                    "type": "json"
                 }
                 
+                # 使用GET请求，因为API文档示例中使用的是GET
                 async with session.get(ai_api_url, params=ai_params) as ai_resp:
                     if ai_resp.status != 200:
                         yield message.plain_result("AI分析服务不可用，请稍后重试").use_t2i(False)
                         return
                     
-                    ai_analysis = await ai_resp.text()
+                    try:
+                        # 尝试解析JSON响应
+                        ai_analysis_json = await ai_resp.json()
+                        logger.info(f"AI API返回的JSON结果：{ai_analysis_json}")
+                        # 从JSON中提取内容，假设JSON结构为{"content": "..."}或类似结构
+                        if isinstance(ai_analysis_json, dict):
+                            # 尝试不同的键名，因为API文档没有明确说明JSON结构
+                            ai_analysis = ai_analysis_json.get("content", "") or ai_analysis_json.get("result", "") or ai_analysis_json.get("answer", "")
+                        elif isinstance(ai_analysis_json, str):
+                            ai_analysis = ai_analysis_json
+                        else:
+                            ai_analysis = str(ai_analysis_json)
+                    except json.JSONDecodeError:
+                        # 如果JSON解析失败，尝试作为纯文本处理
+                        ai_analysis = await ai_resp.text()
+                        logger.info(f"AI API返回的文本结果：{ai_analysis}")
+                    
                     ai_analysis = ai_analysis.strip()
+                    logger.info(f"最终处理后的AI分析结果：{ai_analysis}")
+                    logger.info(f"AI API请求参数：{ai_params}")
                 
                 # 4. 解析AI分析结果
                 analysis_features = ""
@@ -2914,52 +2930,85 @@ class Main(Star):
                 valuation_from_ai = str(valuation_result.get('valuation', 0))
                 
                 try:
-                    # 提取各部分分析结果
-                    lines = ai_analysis.split('\n')
-                    current_section = ""
+                    logger.info(f"开始解析AI分析结果：{ai_analysis}")
                     
-                    for line in lines:
-                        line = line.strip()
-                        if not line:
-                            continue
+                    # 简化解析逻辑，直接提取AI返回的内容，不再严格按照格式分割
+                    # 如果AI返回的内容包含预期的格式分隔符，则使用原始解析逻辑
+                    if "特点评估：" in ai_analysis and "吉凶评估：" in ai_analysis and "总评估：" in ai_analysis:
+                        # 提取各部分分析结果
+                        lines = ai_analysis.split('\n')
+                        logger.info(f"AI分析结果按行分割：{lines}")
+                        current_section = ""
                         
-                        if line.startswith("估价："):
-                            valuation_from_ai = line.replace("估价：", "").strip()
-                            # 移除可能包含的"元"字，避免重复显示
-                            if valuation_from_ai.endswith("元"):
-                                valuation_from_ai = valuation_from_ai[:-1]
-                        elif line.startswith("特点评估："):
-                            current_section = "features"
-                        elif line.startswith("吉凶评估："):
-                            current_section = "jixiong"
-                        elif line.startswith("总评估："):
-                            current_section = "total"
-                        else:
-                            if current_section == "features":
-                                analysis_features += line + "\n"
-                            elif current_section == "jixiong":
-                                analysis_jixiong += line + "\n"
-                            elif current_section == "total":
-                                analysis_total += line + "\n"
+                        for line in lines:
+                            line = line.strip()
+                            logger.info(f"处理行：'{line}'，当前section：{current_section}")
+                            if not line:
+                                continue
+                            
+                            if line.startswith("估价："):
+                                valuation_from_ai = line.replace("估价：", "").strip()
+                                # 移除可能包含的"元"字，避免重复显示
+                                if valuation_from_ai.endswith("元"):
+                                    valuation_from_ai = valuation_from_ai[:-1]
+                                logger.info(f"提取到估价：{valuation_from_ai}")
+                            elif line.startswith("特点评估："):
+                                current_section = "features"
+                                logger.info(f"切换到section：{current_section}")
+                            elif line.startswith("吉凶评估："):
+                                current_section = "jixiong"
+                                logger.info(f"切换到section：{current_section}")
+                            elif line.startswith("总评估："):
+                                current_section = "total"
+                                logger.info(f"切换到section：{current_section}")
+                            else:
+                                if current_section == "features":
+                                    analysis_features += line + "\n"
+                                    logger.info(f"添加到features：{line}")
+                                elif current_section == "jixiong":
+                                    analysis_jixiong += line + "\n"
+                                    logger.info(f"添加到jixiong：{line}")
+                                elif current_section == "total":
+                                    analysis_total += line + "\n"
+                                    logger.info(f"添加到total：{line}")
+                        
+                        # 去除多余换行
+                        analysis_features = analysis_features.strip()
+                        analysis_jixiong = analysis_jixiong.strip()
+                        analysis_total = analysis_total.strip()
+                    else:
+                        # 如果AI返回的内容不包含预期的格式分隔符，则将整个内容作为总评估
+                        logger.info("AI返回的内容不包含预期的格式分隔符，将整个内容作为总评估")
+                        # 尝试从内容中提取估价
+                        if "估价：" in ai_analysis:
+                            valuation_part = ai_analysis.split("估价：")[1].split("\n")[0].strip()
+                            if valuation_part:
+                                valuation_from_ai = valuation_part.replace("元", "").strip()
+                                logger.info(f"提取到估价：{valuation_from_ai}")
+                        # 将整个内容作为总评估
+                        analysis_total = ai_analysis
+                        # 设置默认的特点评估和吉凶评估
+                        analysis_features = "AI综合评估了QQ号码的特点"
+                        analysis_jixiong = "AI分析了QQ号码的吉凶情况"
                     
-                    # 去除多余换行
-                    analysis_features = analysis_features.strip()
-                    analysis_jixiong = analysis_jixiong.strip()
-                    analysis_total = analysis_total.strip()
+                    logger.info(f"解析完成 - features：'{analysis_features}'，jixiong：'{analysis_jixiong}'，total：'{analysis_total}'")
                     
                     # 设置默认值（仅当内容为空时）
                     if not analysis_features:
+                        logger.info("features为空，使用默认值")
                         analysis_features = "根据QQ号码特点进行了综合评估"
                     if not analysis_jixiong:
+                        logger.info("jixiong为空，使用默认值")
                         analysis_jixiong = "根据81数理进行了吉凶分析"
                     if not analysis_total:
+                        logger.info("total为空，使用默认值")
                         analysis_total = "综合考虑各项因素给出了最终估价"
                 except Exception as parse_e:
                     logger.error(f"解析AI分析结果时发生错误：{parse_e}")
-                    # 解析失败时使用默认值
-                    analysis_features = "AI分析结果解析失败"
-                    analysis_jixiong = "AI分析结果解析失败"
-                    analysis_total = "AI分析结果解析失败"
+                    # 解析失败时，将AI原始返回结果直接显示，而不是使用默认值
+                    analysis_features = f"AI原始返回：{ai_analysis}"
+                    analysis_jixiong = ""
+                    analysis_total = ""
                 
                 # 5. 获取当前时间，用于显示在图片中
                 current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
