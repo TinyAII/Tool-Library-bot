@@ -2840,7 +2840,7 @@ class Main(Star):
                     
                     # 准备模板数据
                     update_time = result.get("update", "")
-                    news_count = result.get("count", "0")
+                    news_count = str(result.get("count", 0))
                     
                     # 生成新闻列表HTML
                     news_items = result.get("data", [])
