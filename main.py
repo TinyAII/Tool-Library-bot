@@ -3070,6 +3070,90 @@ class Main(Star):
             logger.error(f"请求历史上的今天时发生错误：{e}")
             yield message.plain_result(f"请求历史上的今天时发生错误：{str(e)}").use_t2i(False)
             return
+    
+    @filter.command("图文合成")
+    async def image_text_synthesis(self, message: AstrMessageEvent):
+        """图文合成功能，将文字转换为图片，包含内容安全审核"""
+        # 提取合成内容
+        msg = message.message_str.replace("图文合成", "").strip()
+        
+        if not msg:
+            yield message.plain_result("正确指令：图文合成 <内容>\n\n示例：图文合成 你好").use_t2i(False)
+            return
+        
+        content = msg.strip()
+        
+        # 内容安全审核
+        ai_api_url = "https://api.jkyai.top/API/depsek3.2.php"
+        ai_system_prompt = "你是一个专业的合规内容审核助手，请严格检测以下文本中是否包含违规内容。\n违规词范围包括但不限于：\n暴力、血腥、恐怖内容\n仇恨、歧视、人身攻击言论\n违法、违禁品或行为引导\n政治敏感、不当言论\n色情、低俗、性暗示内容\n虚假信息、不实谣言\n诈骗、广告、恶意推广\n泄露隐私、他人信息,包括所有链接\n其他违反公序良俗的内容\n请按以下步骤处理：\n逐句或分段分析文本内容；\n如发现疑似违规词或内容则输出：false\n如果内容安全则输出：true"
+        
+        ai_question = f"{ai_system_prompt}\n\n需要审核的文本：\n{content}"
+        
+        try:
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                # 调用AI审核API
+                ai_params = {
+                    "question": ai_question,
+                    "type": "text"
+                }
+                
+                async with session.get(ai_api_url, params=ai_params) as ai_resp:
+                    if ai_resp.status != 200:
+                        yield message.plain_result("内容审核服务不可用，请稍后重试").use_t2i(False)
+                        return
+                    
+                    ai_result = await ai_resp.text()
+                    ai_result = ai_result.strip().lower()
+                    
+                    # 检查审核结果
+                    if ai_result != "true":
+                        yield message.plain_result("内容违规，暂停生成！").use_t2i(False)
+                        return
+                
+                # 审核通过，调用图文合成API
+                image_api_url = "http://ryapi.sbs/API/zsy.php"
+                image_params = {
+                    "msg": content
+                }
+                
+                async with session.get(image_api_url, params=image_params) as image_resp:
+                    if image_resp.status != 200:
+                        yield message.plain_result("图文合成失败，服务器返回错误状态码").use_t2i(False)
+                        return
+                    
+                    # 读取图片内容
+                    image_content = await image_resp.read()
+                    
+                    # 保存图片到本地
+                    import uuid
+                    save_dir = f"data/{self.PLUGIN_NAME}_images"
+                    if not os.path.exists(save_dir):
+                        os.makedirs(save_dir)
+                    
+                    file_name = f"{uuid.uuid4().hex}.jpg"
+                    file_path = os.path.join(save_dir, file_name)
+                    
+                    with open(file_path, "wb") as f:
+                        f.write(image_content)
+                    
+                    # 使用本地文件路径发送图片
+                    from astrbot.api.message_components import Image
+                    yield message.chain_result([Image.fromFileSystem(file_path)]).use_t2i(False)
+                    return
+                        
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result(f"网络连接错误：{str(e)}").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求图文合同时发生错误：{e}")
+            yield message.plain_result(f"请求图文合同时发生错误：{str(e)}").use_t2i(False)
+            return
 
     @filter.command("加密")
     async def shouyu_encrypt(self, message: AstrMessageEvent):
@@ -3579,6 +3663,7 @@ class Main(Star):
 
 【AI功能】
 🎨 绘画 <提示词> - AI绘画生成
+🖼️ 图文合成 <内容> - 文字转图片（含内容安全审核）
 
 【网络工具】
 🌐 代理ip - 获取socks5代理IP
