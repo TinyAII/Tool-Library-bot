@@ -1304,6 +1304,206 @@ class Main(Star):
     </html>
     '''
     
+    # 万年历和黄历结合的HTML模板
+    WANNIANLI_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>万年历</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #ffd93d 0%, #f6921e 100%);
+                margin: 0;
+                padding: 30px;
+                line-height: 1.8;
+                color: #333;
+            }
+            .container {
+                max-width: 900px;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 15px;
+                padding: 40px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            }
+            .title {
+                font-size: 36px;
+                font-weight: bold;
+                text-align: center;
+                color: #c23616;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .date-info {
+                text-align: center;
+                margin-bottom: 40px;
+                padding: 20px;
+                background-color: #fff3cd;
+                border-radius: 10px;
+                border: 2px solid #ffeaa7;
+            }
+            .solar-date {
+                font-size: 28px;
+                font-weight: bold;
+                color: #2c3e50;
+                margin-bottom: 10px;
+            }
+            .lunar-date {
+                font-size: 22px;
+                color: #7f8c8d;
+                margin-bottom: 10px;
+            }
+            .festival {
+                font-size: 20px;
+                font-weight: bold;
+                color: #e74c3c;
+            }
+            .grid-layout {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+                margin: 30px 0;
+            }
+            .section {
+                background-color: #f8f9fa;
+                border-radius: 10px;
+                padding: 30px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .section-title {
+                font-size: 24px;
+                font-weight: bold;
+                color: #3498db;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #3498db;
+            }
+            .info-item {
+                margin: 15px 0;
+                font-size: 16px;
+            }
+            .info-label {
+                font-weight: bold;
+                color: #2c3e50;
+                margin-right: 10px;
+            }
+            .info-value {
+                color: #666;
+            }
+            .huangli-section {
+                background-color: #e8f5e8;
+                border-left: 5px solid #4caf50;
+            }
+            .wannianli-section {
+                background-color: #e3f2fd;
+                border-left: 5px solid #2196f3;
+            }
+            .suit-avoid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                margin: 20px 0;
+            }
+            .suit-avoid-item {
+                background-color: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .suit-avoid-title {
+                font-size: 18px;
+                font-weight: bold;
+                margin-bottom: 15px;
+            }
+            .suit {
+                color: #4caf50;
+            }
+            .avoid {
+                color: #f44336;
+            }
+            .info-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+                margin: 20px 0;
+            }
+            .huangli-info-item {
+                background-color: white;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            }
+            .huangli-info-name {
+                font-size: 14px;
+                font-weight: bold;
+                color: #7f8c8d;
+                margin-bottom: 5px;
+            }
+            .huangli-info-value {
+                font-size: 16px;
+                color: #2c3e50;
+            }
+            .footer {
+                margin-top: 40px;
+                text-align: center;
+                color: #95a5a6;
+                font-size: 14px;
+                padding-top: 20px;
+                border-top: 1px solid #ecf0f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">📅 万年历 📅</h1>
+            <div class="date-info">
+                <div class="solar-date">{{solar_date}}</div>
+                <div class="lunar-date">{{lunar_date}} | 星期{{weekday}} | 属{{animal}}</div>
+                <div class="festival">{{festival}}</div>
+            </div>
+            <div class="grid-layout">
+                <!-- 万年历信息 -->
+                <div class="section wannianli-section">
+                    <h2 class="section-title">📋 基本信息</h2>
+                    <div class="info-grid">
+                        <div class="info-item"><span class="info-label">阳历：</span><span class="info-value">{{solar_date_full}}</span></div>
+                        <div class="info-item"><span class="info-label">阴历：</span><span class="info-value">{{lunar_date_full}}</span></div>
+                        <div class="info-item"><span class="info-label">干支：</span><span class="info-value">{{gz_year}}年 {{gz_month}}月 {{gz_date}}日</span></div>
+                        <div class="info-item"><span class="info-label">节气：</span><span class="info-value">{{term}}</span></div>
+                    </div>
+                    
+                    <h2 class="section-title">✨ 宜事宜忌</h2>
+                    <div class="suit-avoid">
+                        <div class="suit-avoid-item">
+                            <div class="suit-avoid-title suit">✅ 宜</div>
+                            <div class="info-value">{{suit}}</div>
+                        </div>
+                        <div class="suit-avoid-item">
+                            <div class="suit-avoid-title avoid">❌ 忌</div>
+                            <div class="info-value">{{avoid}}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 黄历信息 -->
+                <div class="section huangli-section">
+                    <h2 class="section-title">🔮 黄历详情</h2>
+                    <div class="huangli-info-grid">
+                        {{huangli_info}}
+                    </div>
+                </div>
+            </div>
+            <div class="footer">
+                查询时间：{{current_time}}
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
     # 实时科技资讯的HTML模板
     TECH_NEWS_TEMPLATE = '''
     <!DOCTYPE html>
@@ -3256,6 +3456,104 @@ class Main(Star):
         except Exception as e:
             logger.error(f"请求历史上的今天时发生错误：{e}")
             yield message.plain_result(f"请求历史上的今天时发生错误：{str(e)}").use_t2i(False)
+            return
+    
+    @filter.command("万年历")
+    async def wannianli(self, message: AstrMessageEvent):
+        """获取万年历和黄历信息，生成图片返回"""
+        try:
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                # 1. 调用万年历API
+                wannianli_api = "https://api.52vmy.cn/api/wl/wnl"
+                async with session.get(wannianli_api) as wannianli_resp:
+                    if wannianli_resp.status != 200:
+                        yield message.plain_result("获取万年历数据失败，服务器返回错误状态码").use_t2i(False)
+                        return
+                    
+                    wannianli_data = await wannianli_resp.json()
+                
+                # 2. 调用黄历API
+                huangli_api = "https://api.52vmy.cn/api/wl/wnl/huangli"
+                async with session.get(huangli_api) as huangli_resp:
+                    if huangli_resp.status != 200:
+                        yield message.plain_result("获取黄历数据失败，服务器返回错误状态码").use_t2i(False)
+                        return
+                    
+                    huangli_result = await huangli_resp.json()
+                    huangli_data = huangli_result.get("data", {})
+                
+                # 3. 准备数据
+                # 万年历数据
+                solar_date = f"{wannianli_data.get('year', '')}年{wannianli_data.get('month', '')}月{wannianli_data.get('day', '')}日"
+                solar_date_full = solar_date
+                lunar_date = f"农历{wannianli_data.get('lunarMonth', '')}月{wannianli_data.get('lunarDate', '')}"
+                lunar_date_full = f"{wannianli_data.get('lunarYear', '')}年{wannianli_data.get('lunarMonth', '')}月{wannianli_data.get('lunarDate', '')}日"
+                weekday = wannianli_data.get('cnDay', '')
+                animal = wannianli_data.get('animal', '')
+                festival = wannianli_data.get('festivalList', '')
+                gz_year = wannianli_data.get('gzYear', '')
+                gz_month = wannianli_data.get('gzMonth', '')
+                gz_date = wannianli_data.get('gzDate', '')
+                term = wannianli_data.get('term', '')
+                suit = wannianli_data.get('suit', '无')
+                avoid = wannianli_data.get('avoid', '无')
+                
+                # 黄历数据
+                huangli_info_list = huangli_data.get('info', [])
+                huangli_html = ""
+                for item in huangli_info_list:
+                    name = item.get('name', '')
+                    index = item.get('index', '')
+                    huangli_html += f'<div class="huangli-info-item"><div class="huangli-info-name">{name}</div><div class="huangli-info-value">{index}</div></div>'
+                
+                # 4. 获取当前时间
+                current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                
+                # 5. 渲染HTML模板
+                template_data = {
+                    "solar_date": solar_date,
+                    "solar_date_full": solar_date_full,
+                    "lunar_date": lunar_date,
+                    "lunar_date_full": lunar_date_full,
+                    "weekday": weekday,
+                    "animal": animal,
+                    "festival": festival,
+                    "gz_year": gz_year,
+                    "gz_month": gz_month,
+                    "gz_date": gz_date,
+                    "term": term,
+                    "suit": suit,
+                    "avoid": avoid,
+                    "huangli_info": huangli_html,
+                    "current_time": current_time
+                }
+                
+                html_content = self.WANNIANLI_TEMPLATE
+                for key, value in template_data.items():
+                    placeholder = "{{" + key + "}}"
+                    html_content = html_content.replace(placeholder, str(value))
+                
+                # 6. 使用html_render函数生成图片
+                options = {
+                    "full_page": True,
+                    "type": "jpeg",
+                    "quality": 95,
+                }
+                
+                image_url = await self.html_render(
+                    html_content,  # 渲染后的HTML内容
+                    {},  # 空数据字典
+                    True,  # 返回URL
+                    options  # 图片生成选项
+                )
+                
+                # 7. 发送图片结果
+                yield message.image_result_from_url(image_url).use_t2i(False)
+                return
+        except Exception as e:
+            logger.error(f"万年历生成失败：{e}")
+            yield message.plain_result(f"万年历生成失败：{str(e)}").use_t2i(False)
             return
     
     @filter.command("图文合成")
