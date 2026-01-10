@@ -3387,7 +3387,8 @@ class Main(Star):
                         return
                     
                     # 返回加密结果
-                    yield message.plain_result(f"加密结果：{encrypted_text}").use_t2i(False)
+                    response = f"加密结果：{encrypted_text}\n\n注意，解密是通过腾讯安全中心接口，请注意违规词，避免被封禁账号！！！"
+                    yield message.plain_result(response).use_t2i(False)
                     return
                         
         except aiohttp.ClientError as e:
@@ -3471,9 +3472,9 @@ class Main(Star):
                         
                         async with session.get(ai_api_url, params=ai_params) as ai_resp:
                             if ai_resp.status != 200:
-                                # AI审核失败，仍返回解密结果
+                                # AI审核失败，进行拦截
                                 logger.warning(f"AI审核失败，状态码：{ai_resp.status}")
-                                yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                                yield message.plain_result("QQ安全中心未响应，重新申请").use_t2i(False)
                                 return
                             
                             ai_result = await ai_resp.text()
@@ -3483,9 +3484,9 @@ class Main(Star):
                             try:
                                 ai_lines = ai_result.split('\n')
                                 if len(ai_lines) < 1:
-                                    # 结果格式异常，仍返回解密结果
+                                    # 结果格式异常，进行拦截
                                     logger.warning(f"AI审核结果格式异常：{ai_result}")
-                                    yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                                    yield message.plain_result("QQ安全中心未响应，重新申请").use_t2i(False)
                                     return
                                 
                                 # 提取安全状态
@@ -3532,19 +3533,19 @@ class Main(Star):
                                     yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
                                     return
                                 else:
-                                    # 结果格式异常，仍返回解密结果
+                                    # 结果格式异常，进行拦截
                                     logger.warning(f"AI审核结果格式异常：{ai_result}")
-                                    yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                                    yield message.plain_result("QQ安全中心未响应，重新申请").use_t2i(False)
                                     return
                             except Exception as parse_e:
-                                # 解析AI结果失败，仍返回解密结果
+                                # 解析AI结果失败，进行拦截
                                 logger.error(f"解析AI审核结果时发生错误：{parse_e}")
-                                yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                                yield message.plain_result("QQ安全中心未响应，重新申请").use_t2i(False)
                                 return
                     except Exception as ai_e:
-                        # AI审核过程中发生异常，仍返回解密结果
+                        # AI审核过程中发生异常，进行拦截
                         logger.error(f"AI审核过程中发生错误：{ai_e}")
-                        yield message.plain_result(f"解密结果：{decrypted_text}").use_t2i(False)
+                        yield message.plain_result("QQ安全中心未响应，重新申请").use_t2i(False)
                         return
                     
                     # 返回解密结果
@@ -3627,7 +3628,7 @@ class Main(Star):
                         return
                     
                     # 构造响应消息
-                    response = f"密文：{ciphertext}\n模式：{mode}\n填充：{padding}\n\n注意！！保护好你的密文和加密密钥，解密需要加密密钥和密文"
+                    response = f"密文：{ciphertext}\n模式：{mode}\n填充：{padding}\n\n注意！！保护好你的密文和加密密钥，解密需要加密密钥和密文\n\n注意，解密是通过腾讯安全中心接口，请注意违规词，避免被封禁账号！！！"
                     
                     # 返回加密结果
                     yield message.plain_result(response).use_t2i(False)
@@ -3720,10 +3721,9 @@ class Main(Star):
                         
                         async with session.get(ai_api_url, params=ai_params) as ai_resp:
                             if ai_resp.status != 200:
-                                # AI审核失败，仍返回解密结果
+                                # AI审核失败，进行拦截
                                 logger.warning(f"AI审核失败，状态码：{ai_resp.status}")
-                                response = f"解密成功！\n\n内容：{plaintext}"
-                                yield message.plain_result(response).use_t2i(False)
+                                yield message.plain_result("QQ安全中心未响应，重新申请").use_t2i(False)
                                 return
                             
                             ai_result = await ai_resp.text()
@@ -3733,10 +3733,9 @@ class Main(Star):
                             try:
                                 ai_lines = ai_result.split('\n')
                                 if len(ai_lines) < 1:
-                                    # 结果格式异常，仍返回解密结果
+                                    # 结果格式异常，进行拦截
                                     logger.warning(f"AI审核结果格式异常：{ai_result}")
-                                    response = f"解密成功！\n\n内容：{plaintext}"
-                                    yield message.plain_result(response).use_t2i(False)
+                                    yield message.plain_result("QQ安全中心未响应，重新申请").use_t2i(False)
                                     return
                                 
                                 # 提取安全状态
@@ -3784,22 +3783,19 @@ class Main(Star):
                                     yield message.plain_result(response).use_t2i(False)
                                     return
                                 else:
-                                    # 结果格式异常，仍返回解密结果
+                                    # 结果格式异常，进行拦截
                                     logger.warning(f"AI审核结果格式异常：{ai_result}")
-                                    response = f"解密成功！\n\n内容：{plaintext}"
-                                    yield message.plain_result(response).use_t2i(False)
+                                    yield message.plain_result("QQ安全中心未响应，重新申请").use_t2i(False)
                                     return
                             except Exception as parse_e:
-                                # 解析AI结果失败，仍返回解密结果
+                                # 解析AI结果失败，进行拦截
                                 logger.error(f"解析AI审核结果时发生错误：{parse_e}")
-                                response = f"解密成功！\n\n内容：{plaintext}"
-                                yield message.plain_result(response).use_t2i(False)
+                                yield message.plain_result("QQ安全中心未响应，重新申请").use_t2i(False)
                                 return
                     except Exception as ai_e:
-                        # AI审核过程中发生异常，仍返回解密结果
+                        # AI审核过程中发生异常，进行拦截
                         logger.error(f"AI审核过程中发生错误：{ai_e}")
-                        response = f"解密成功！\n\n内容：{plaintext}"
-                        yield message.plain_result(response).use_t2i(False)
+                        yield message.plain_result("QQ安全中心未响应，重新申请").use_t2i(False)
                         return
                     
                     # 返回解密结果
