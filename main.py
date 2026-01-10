@@ -2839,11 +2839,11 @@ class Main(Star):
                     current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     
                     # 准备模板数据
-                    update_time = result.get("更新", "")
-                    news_count = result.get("伯爵", "0")
+                    update_time = result.get("update", "")
+                    news_count = result.get("count", "0")
                     
                     # 生成新闻列表HTML
-                    news_items = result.get("数据", [])
+                    news_items = result.get("data", [])
                     news_html = ""
                     for news in news_items:
                         if isinstance(news, dict):
