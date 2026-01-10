@@ -2886,21 +2886,16 @@ class Main(Star):
                 
                 # 3. 调用DeepSeek-3.1API进行综合分析
                 ai_api_url = "https://api.jkyai.top/API/depsek3.1.php"
-                ai_system_prompt = "QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n请基于以下参考数据，独立给出QQ账号的最终估价和综合分析：\nQQ号码：{qq_number}\n参考估价：{valuation}元\nQQ特点：{law}\nQQ数字特征：{digit}\nQQ吉凶：{jixiong_nature}\nQQ数理：{jixiong_number}\nQQ吉凶名称：{jixiong_title}\nQQ吉凶含义：{jixiong_meaning}\n\n注意：\n1. 最终估价由你独立判断，参考估价仅作为参考\n2. 输出的估价部分请只包含数字，不要包含单位\n3. 严格按照以下格式输出，不要添加额外内容：\n估价：XXXX\n特点评估：\n吉凶评估：\n总评估："
                 
-                ai_prompt = ai_system_prompt.format(
-                    qq_number=qq_number,
-                    valuation=valuation_result.get('valuation', 0),
-                    law=valuation_result.get('law', ''),
-                    digit=valuation_result.get('digit', ''),
-                    jixiong_nature=jixiong_data.get('nature', ''),
-                    jixiong_number=jixiong_data.get('number', ''),
-                    jixiong_title=jixiong_data.get('title', ''),
-                    jixiong_meaning=jixiong_data.get('meaning', '')
-                )
+                # 分离系统提示词和实际问题
+                ai_system = "QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n注意：\n1. 最终估价由你独立判断，参考估价仅作为参考\n2. 输出的估价部分请只包含数字，不要包含单位\n3. 严格按照以下格式输出，不要添加额外内容：\n估价：XXXX\n特点评估：\n吉凶评估：\n总评估："
+                
+                # 实际问题包含要分析的数据
+                ai_question = f"请基于以下参考数据，独立给出QQ账号的最终估价和综合分析：\nQQ号码：{qq_number}\n参考估价：{valuation_result.get('valuation', 0)}元\nQQ特点：{valuation_result.get('law', '')}\nQQ数字特征：{valuation_result.get('digit', '')}\nQQ吉凶：{jixiong_data.get('nature', '')}\nQQ数理：{jixiong_data.get('number', '')}\nQQ吉凶名称：{jixiong_data.get('title', '')}\nQQ吉凶含义：{jixiong_data.get('meaning', '')}"
                 
                 ai_params = {
-                    "question": ai_prompt,
+                    "question": ai_question,
+                    "system": ai_system,
                     "type": "text"
                 }
                 
@@ -3549,7 +3544,7 @@ class Main(Star):
                 )
                 
                 # 7. 发送图片结果
-                yield message.image_result_from_url(image_url).use_t2i(False)
+                yield message.image_result(image_url).use_t2i(False)
                 return
         except Exception as e:
             logger.error(f"万年历生成失败：{e}")
