@@ -3515,7 +3515,24 @@ class Main(Star):
                         yield message.plain_result("获取万年历数据失败，服务器返回错误状态码").use_t2i(False)
                         return
                     
-                    wannianli_data = await wannianli_resp.json()
+                    # 检查响应类型，增加容错机制
+                    content_type = wannianli_resp.headers.get('Content-Type', '')
+                    wannianli_data = {}
+                    
+                    if 'application/json' in content_type or 'text/json' in content_type:
+                        # 如果是JSON格式，直接解析
+                        wannianli_data = await wannianli_resp.json()
+                    else:
+                        # 如果不是JSON格式，尝试读取文本并手动解析
+                        try:
+                            response_text = await wannianli_resp.text()
+                            # 尝试解析JSON字符串
+                            wannianli_data = json.loads(response_text)
+                        except json.JSONDecodeError:
+                            # 如果解析失败，返回错误信息
+                            logger.error(f"万年历API返回非JSON格式数据：{response_text}")
+                            yield message.plain_result("获取万年历数据失败，服务器返回格式错误").use_t2i(False)
+                            return
                 
                 # 2. 调用黄历API
                 huangli_api = "https://api.52vmy.cn/api/wl/wnl/huangli"
@@ -3524,8 +3541,29 @@ class Main(Star):
                         yield message.plain_result("获取黄历数据失败，服务器返回错误状态码").use_t2i(False)
                         return
                     
-                    huangli_result = await huangli_resp.json()
-                    huangli_data = huangli_result.get("data", {})
+                    # 检查响应类型，增加容错机制
+                    content_type = huangli_resp.headers.get('Content-Type', '')
+                    huangli_result = {}
+                    huangli_data = {}
+                    
+                    if 'application/json' in content_type or 'text/json' in content_type:
+                        # 如果是JSON格式，直接解析
+                        huangli_result = await huangli_resp.json()
+                        huangli_data = huangli_result.get("data", {})
+                    else:
+                        # 如果不是JSON格式，尝试读取文本并手动解析
+                        try:
+                            response_text = await huangli_resp.text()
+                            # 尝试解析JSON字符串
+                            huangli_result = json.loads(response_text)
+                            huangli_data = huangli_result.get("data", {})
+                        except json.JSONDecodeError:
+                            # 如果解析失败，使用空数据继续执行，不影响主功能
+                            logger.warning(f"黄历API返回非JSON格式数据：{response_text}")
+                            # 使用默认空数据
+                            huangli_data = {
+                                "info": []
+                            }
                 
                 # 3. 准备数据
                 # 万年历数据
