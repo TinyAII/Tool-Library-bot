@@ -3648,7 +3648,15 @@ class Main(Star):
                     if wnl_resp.status != 200:
                         yield message.plain_result(f"请求万年历数据失败，服务器返回错误状态码 {wnl_resp.status}").use_t2i(False)
                         return
-                    wnl_data = await wnl_resp.json()
+                    # 先读取响应文本，处理可能的HTML响应
+                    wnl_text = await wnl_resp.text()
+                    try:
+                        wnl_data = json.loads(wnl_text)
+                    except json.JSONDecodeError:
+                        # 如果返回的是HTML，记录错误
+                        logger.error(f"万年历API返回HTML而非JSON: {wnl_text[:500]}...")
+                        yield message.plain_result("万年历数据格式错误，请稍后重试").use_t2i(False)
+                        return
                 
                 # 2. 获取黄历数据
                 hl_api = "https://api.52vmy.cn/api/wl/wnl/huangli"
@@ -3656,7 +3664,15 @@ class Main(Star):
                     if hl_resp.status != 200:
                         yield message.plain_result(f"请求黄历数据失败，服务器返回错误状态码 {hl_resp.status}").use_t2i(False)
                         return
-                    hl_data = await hl_resp.json()
+                    # 先读取响应文本，处理可能的HTML响应
+                    hl_text = await hl_resp.text()
+                    try:
+                        hl_data = json.loads(hl_text)
+                    except json.JSONDecodeError:
+                        # 如果返回的是HTML，检查是否包含错误信息
+                        logger.error(f"黄历API返回HTML而非JSON: {hl_text[:500]}...")
+                        yield message.plain_result("黄历数据格式错误，请稍后重试").use_t2i(False)
+                        return
                 
                 # 3. 检查API返回数据完整性
                 if not wnl_data:
