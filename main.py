@@ -1304,206 +1304,6 @@ class Main(Star):
     </html>
     '''
     
-    # 万年历和黄历结合的HTML模板
-    WANNIANLI_TEMPLATE = '''
-    <!DOCTYPE html>
-    <html lang="zh-CN">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>万年历</title>
-        <style>
-            body {
-                font-family: 'Microsoft YaHei', Arial, sans-serif;
-                background: linear-gradient(135deg, #ffd93d 0%, #f6921e 100%);
-                margin: 0;
-                padding: 30px;
-                line-height: 1.8;
-                color: #333;
-            }
-            .container {
-                max-width: 900px;
-                margin: 0 auto;
-                background-color: white;
-                border-radius: 15px;
-                padding: 40px;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-            }
-            .title {
-                font-size: 36px;
-                font-weight: bold;
-                text-align: center;
-                color: #c23616;
-                margin-bottom: 30px;
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            }
-            .date-info {
-                text-align: center;
-                margin-bottom: 40px;
-                padding: 20px;
-                background-color: #fff3cd;
-                border-radius: 10px;
-                border: 2px solid #ffeaa7;
-            }
-            .solar-date {
-                font-size: 28px;
-                font-weight: bold;
-                color: #2c3e50;
-                margin-bottom: 10px;
-            }
-            .lunar-date {
-                font-size: 22px;
-                color: #7f8c8d;
-                margin-bottom: 10px;
-            }
-            .festival {
-                font-size: 20px;
-                font-weight: bold;
-                color: #e74c3c;
-            }
-            .grid-layout {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 30px;
-                margin: 30px 0;
-            }
-            .section {
-                background-color: #f8f9fa;
-                border-radius: 10px;
-                padding: 30px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            }
-            .section-title {
-                font-size: 24px;
-                font-weight: bold;
-                color: #3498db;
-                margin-bottom: 20px;
-                padding-bottom: 10px;
-                border-bottom: 2px solid #3498db;
-            }
-            .info-item {
-                margin: 15px 0;
-                font-size: 16px;
-            }
-            .info-label {
-                font-weight: bold;
-                color: #2c3e50;
-                margin-right: 10px;
-            }
-            .info-value {
-                color: #666;
-            }
-            .huangli-section {
-                background-color: #e8f5e8;
-                border-left: 5px solid #4caf50;
-            }
-            .wannianli-section {
-                background-color: #e3f2fd;
-                border-left: 5px solid #2196f3;
-            }
-            .suit-avoid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 20px;
-                margin: 20px 0;
-            }
-            .suit-avoid-item {
-                background-color: white;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            }
-            .suit-avoid-title {
-                font-size: 18px;
-                font-weight: bold;
-                margin-bottom: 15px;
-            }
-            .suit {
-                color: #4caf50;
-            }
-            .avoid {
-                color: #f44336;
-            }
-            .info-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 15px;
-                margin: 20px 0;
-            }
-            .huangli-info-item {
-                background-color: white;
-                padding: 15px;
-                border-radius: 8px;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            }
-            .huangli-info-name {
-                font-size: 14px;
-                font-weight: bold;
-                color: #7f8c8d;
-                margin-bottom: 5px;
-            }
-            .huangli-info-value {
-                font-size: 16px;
-                color: #2c3e50;
-            }
-            .footer {
-                margin-top: 40px;
-                text-align: center;
-                color: #95a5a6;
-                font-size: 14px;
-                padding-top: 20px;
-                border-top: 1px solid #ecf0f1;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1 class="title">📅 万年历 📅</h1>
-            <div class="date-info">
-                <div class="solar-date">{{solar_date}}</div>
-                <div class="lunar-date">{{lunar_date}} | 星期{{weekday}} | 属{{animal}}</div>
-                <div class="festival">{{festival}}</div>
-            </div>
-            <div class="grid-layout">
-                <!-- 万年历信息 -->
-                <div class="section wannianli-section">
-                    <h2 class="section-title">📋 基本信息</h2>
-                    <div class="info-grid">
-                        <div class="info-item"><span class="info-label">阳历：</span><span class="info-value">{{solar_date_full}}</span></div>
-                        <div class="info-item"><span class="info-label">阴历：</span><span class="info-value">{{lunar_date_full}}</span></div>
-                        <div class="info-item"><span class="info-label">干支：</span><span class="info-value">{{gz_year}}年 {{gz_month}}月 {{gz_date}}日</span></div>
-                        <div class="info-item"><span class="info-label">节气：</span><span class="info-value">{{term}}</span></div>
-                    </div>
-                    
-                    <h2 class="section-title">✨ 宜事宜忌</h2>
-                    <div class="suit-avoid">
-                        <div class="suit-avoid-item">
-                            <div class="suit-avoid-title suit">✅ 宜</div>
-                            <div class="info-value">{{suit}}</div>
-                        </div>
-                        <div class="suit-avoid-item">
-                            <div class="suit-avoid-title avoid">❌ 忌</div>
-                            <div class="info-value">{{avoid}}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 黄历信息 -->
-                <div class="section huangli-section">
-                    <h2 class="section-title">🔮 黄历详情</h2>
-                    <div class="huangli-info-grid">
-                        {{huangli_info}}
-                    </div>
-                </div>
-            </div>
-            <div class="footer">
-                查询时间：{{current_time}}
-            </div>
-        </div>
-    </body>
-    </html>
-    '''
-    
     # 实时科技资讯的HTML模板
     TECH_NEWS_TEMPLATE = '''
     <!DOCTYPE html>
@@ -1592,13 +1392,307 @@ class Main(Star):
                 <div class="update-time">更新时间：{{update_time}}</div>
                 <div class="news-count">共 {{news_count}} 条资讯</div>
             </div>
-            
             <div class="news-list">
-                {{news_items}}
+                {% for news in news_list %}
+                <div class="news-item">
+                    <span class="news-time">{{news.time}}</span>
+                    <span class="news-title">{{news.title}}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="footer">
+                查询时间：{{current_time}} | 数据来源：专业科技资讯服务
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
+    # 万年历和黄历结合的HTML模板
+    CALENDAR_TEMPLATE = '''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>万年历</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+                margin: 0;
+                padding: 30px;
+                line-height: 1.8;
+                color: #333;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 15px;
+                padding: 40px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            }
+            .title {
+                font-size: 36px;
+                font-weight: bold;
+                text-align: center;
+                color: #e67e22;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            }
+            .header-section {
+                text-align: center;
+                margin-bottom: 40px;
+                padding: 25px;
+                background-color: #fff3cd;
+                border-radius: 12px;
+                border: 2px solid #ffeaa7;
+            }
+            .date-info {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                margin: 20px 0;
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+            .date-main {
+                font-size: 48px;
+                font-weight: bold;
+                color: #e67e22;
+            }
+            .date-lunar {
+                font-size: 24px;
+                color: #8e44ad;
+                font-weight: bold;
+            }
+            .date-year {
+                font-size: 20px;
+                color: #27ae60;
+            }
+            .date-week {
+                font-size: 20px;
+                color: #3498db;
+            }
+            .date-animal {
+                font-size: 20px;
+                color: #e74c3c;
+            }
+            .festival {
+                font-size: 28px;
+                font-weight: bold;
+                color: #d35400;
+                margin: 15px 0;
+                text-align: center;
+            }
+            .info-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 25px;
+                margin: 30px 0;
+            }
+            .info-card {
+                background-color: #f8f9fa;
+                border-radius: 12px;
+                padding: 25px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                border-left: 5px solid #3498db;
+            }
+            .info-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: #2c3e50;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #3498db;
+            }
+            .info-item {
+                margin: 15px 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .info-label {
+                font-weight: bold;
+                color: #7f8c8d;
+                font-size: 16px;
+            }
+            .info-value {
+                color: #2c3e50;
+                font-size: 16px;
+                text-align: right;
+                flex: 1;
+                margin-left: 20px;
+            }
+            .yellow-info {
+                background-color: #fff9c4;
+                border-left-color: #ffc107;
+            }
+            .yellow-info .info-title {
+                border-bottom-color: #ffc107;
+            }
+            .suit-avoid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                margin: 30px 0;
+            }
+            .suit, .avoid {
+                background-color: #e8f5e8;
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .avoid {
+                background-color: #ffebee;
+            }
+            .suit-title, .avoid-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: #2e7d32;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+            .avoid-title {
+                color: #c62828;
+            }
+            .suit-content, .avoid-content {
+                font-size: 16px;
+                line-height: 2.0;
+                color: #333;
+                text-align: center;
+            }
+            .huangli-info {
+                margin: 30px 0;
+                padding: 25px;
+                background-color: #f3e5f5;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                border: 2px solid #e1bee7;
+            }
+            .huangli-title {
+                font-size: 24px;
+                font-weight: bold;
+                color: #6a1b9a;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+            .huangli-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+            }
+            .huangli-item {
+                text-align: center;
+                padding: 15px;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .huangli-item-name {
+                font-weight: bold;
+                color: #7b1fa2;
+                margin-bottom: 8px;
+                font-size: 16px;
+            }
+            .huangli-item-value {
+                color: #2c3e50;
+                font-size: 15px;
+            }
+            .footer {
+                margin-top: 40px;
+                text-align: center;
+                color: #95a5a6;
+                font-size: 14px;
+                padding-top: 20px;
+                border-top: 1px solid #ecf0f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">📅 万年历 📅</h1>
+            <div class="header-section">
+                <div class="festival">{{festival}}</div>
+                <div class="date-info">
+                    <div class="date-main">{{year}}年{{month}}月{{day}}日</div>
+                    <div class="date-lunar">{{lunarYear}}年{{lMonth}}{{lDate}}</div>
+                </div>
+                <div class="date-info">
+                    <div class="date-week">星期{{cnDay}}</div>
+                    <div class="date-animal">生肖：{{animal}}</div>
+                    <div class="date-year">干支：{{gzYear}}年{{gzMonth}}月{{gzDate}}日</div>
+                </div>
+            </div>
+            
+            <div class="suit-avoid">
+                <div class="suit">
+                    <div class="suit-title">宜</div>
+                    <div class="suit-content">{{suit}}</div>
+                </div>
+                <div class="avoid">
+                    <div class="avoid-title">忌</div>
+                    <div class="avoid-content">{{avoid}}</div>
+                </div>
+            </div>
+            
+            <div class="huangli-info">
+                <div class="huangli-title">黄历详情</div>
+                <div class="huangli-grid">
+                    {% for item in huangli_info %}
+                    <div class="huangli-item">
+                        <div class="huangli-item-name">{{item.name}}</div>
+                        <div class="huangli-item-value">{{item.index}}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-title">基本信息</div>
+                    <div class="info-item">
+                        <div class="info-label">阳历日期</div>
+                        <div class="info-value">{{year}}年{{month}}月{{day}}日</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">农历日期</div>
+                        <div class="info-value">{{lunarYear}}年{{lunarMonth}}月{{lunarDate}}日</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">星期</div>
+                        <div class="info-value">星期{{cnDay}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">生肖</div>
+                        <div class="info-value">{{animal}}</div>
+                    </div>
+                </div>
+                
+                <div class="info-card yellow-info">
+                    <div class="info-title">干支信息</div>
+                    <div class="info-item">
+                        <div class="info-label">干支年</div>
+                        <div class="info-value">{{gzYear}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">干支月</div>
+                        <div class="info-value">{{gzMonth}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">干支日</div>
+                        <div class="info-value">{{gzDate}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">节气</div>
+                        <div class="info-value">{{term if term else '无'}}</div>
+                    </div>
+                </div>
             </div>
             
             <div class="footer">
-                查询时间：{{current_time}} | 数据来源：专业科技资讯服务
+                数据来源：专业万年历服务 | 查询时间：{{current_time}}
             </div>
         </div>
     </body>
@@ -2886,42 +2980,31 @@ class Main(Star):
                 
                 # 3. 调用DeepSeek-3.1API进行综合分析
                 ai_api_url = "https://api.jkyai.top/API/depsek3.1.php"
+                ai_system_prompt = "QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n请基于以下参考数据，独立给出QQ账号的最终估价和综合分析：\nQQ号码：{qq_number}\n参考估价：{valuation}元\nQQ特点：{law}\nQQ数字特征：{digit}\nQQ吉凶：{jixiong_nature}\nQQ数理：{jixiong_number}\nQQ吉凶名称：{jixiong_title}\nQQ吉凶含义：{jixiong_meaning}\n\n注意：\n1. 最终估价由你独立判断，参考估价仅作为参考\n2. 输出的估价部分请只包含数字，不要包含单位\n3. 严格按照以下格式输出，不要添加额外内容：\n估价：XXXX\n特点评估：\n吉凶评估：\n总评估："
                 
-                # 简化提示词，确保AI理解并按要求输出
-                ai_prompt = f"QQ估价专用提示词（硬性数据版）\n角色：你是一位专注客观数据的数字资产评估师，仅根据可验证的硬性指标分析QQ账号价值。\n\n请基于以下参考数据，独立给出QQ账号的最终估价和综合分析：\nQQ号码：{qq_number}\n参考估价：{valuation_result.get('valuation', 0)}元\nQQ特点：{valuation_result.get('law', '')}\nQQ数字特征：{valuation_result.get('digit', '')}\nQQ吉凶：{jixiong_data.get('nature', '')}\nQQ数理：{jixiong_data.get('number', '')}\nQQ吉凶名称：{jixiong_data.get('title', '')}\nQQ吉凶含义：{jixiong_data.get('meaning', '')}\n\n注意：\n1. 最终估价由你独立判断，参考估价仅作为参考\n2. 输出的估价部分请只包含数字，不要包含单位\n3. 严格按照以下格式输出，不要添加额外内容：\n估价：XXXX\n特点评估：\n吉凶评估：\n总评估："
+                ai_prompt = ai_system_prompt.format(
+                    qq_number=qq_number,
+                    valuation=valuation_result.get('valuation', 0),
+                    law=valuation_result.get('law', ''),
+                    digit=valuation_result.get('digit', ''),
+                    jixiong_nature=jixiong_data.get('nature', ''),
+                    jixiong_number=jixiong_data.get('number', ''),
+                    jixiong_title=jixiong_data.get('title', ''),
+                    jixiong_meaning=jixiong_data.get('meaning', '')
+                )
                 
-                # 尝试使用JSON返回格式，这样可以更可靠地解析结果
                 ai_params = {
                     "question": ai_prompt,
-                    "type": "json"
+                    "type": "text"
                 }
                 
-                # 使用GET请求，因为API文档示例中使用的是GET
                 async with session.get(ai_api_url, params=ai_params) as ai_resp:
                     if ai_resp.status != 200:
                         yield message.plain_result("AI分析服务不可用，请稍后重试").use_t2i(False)
                         return
                     
-                    try:
-                        # 尝试解析JSON响应
-                        ai_analysis_json = await ai_resp.json()
-                        logger.info(f"AI API返回的JSON结果：{ai_analysis_json}")
-                        # 从JSON中提取内容，假设JSON结构为{"content": "..."}或类似结构
-                        if isinstance(ai_analysis_json, dict):
-                            # 尝试不同的键名，因为API文档没有明确说明JSON结构
-                            ai_analysis = ai_analysis_json.get("content", "") or ai_analysis_json.get("result", "") or ai_analysis_json.get("answer", "")
-                        elif isinstance(ai_analysis_json, str):
-                            ai_analysis = ai_analysis_json
-                        else:
-                            ai_analysis = str(ai_analysis_json)
-                    except json.JSONDecodeError:
-                        # 如果JSON解析失败，尝试作为纯文本处理
-                        ai_analysis = await ai_resp.text()
-                        logger.info(f"AI API返回的文本结果：{ai_analysis}")
-                    
+                    ai_analysis = await ai_resp.text()
                     ai_analysis = ai_analysis.strip()
-                    logger.info(f"最终处理后的AI分析结果：{ai_analysis}")
-                    logger.info(f"AI API请求参数：{ai_params}")
                 
                 # 4. 解析AI分析结果
                 analysis_features = ""
@@ -2930,85 +3013,52 @@ class Main(Star):
                 valuation_from_ai = str(valuation_result.get('valuation', 0))
                 
                 try:
-                    logger.info(f"开始解析AI分析结果：{ai_analysis}")
+                    # 提取各部分分析结果
+                    lines = ai_analysis.split('\n')
+                    current_section = ""
                     
-                    # 简化解析逻辑，直接提取AI返回的内容，不再严格按照格式分割
-                    # 如果AI返回的内容包含预期的格式分隔符，则使用原始解析逻辑
-                    if "特点评估：" in ai_analysis and "吉凶评估：" in ai_analysis and "总评估：" in ai_analysis:
-                        # 提取各部分分析结果
-                        lines = ai_analysis.split('\n')
-                        logger.info(f"AI分析结果按行分割：{lines}")
-                        current_section = ""
+                    for line in lines:
+                        line = line.strip()
+                        if not line:
+                            continue
                         
-                        for line in lines:
-                            line = line.strip()
-                            logger.info(f"处理行：'{line}'，当前section：{current_section}")
-                            if not line:
-                                continue
-                            
-                            if line.startswith("估价："):
-                                valuation_from_ai = line.replace("估价：", "").strip()
-                                # 移除可能包含的"元"字，避免重复显示
-                                if valuation_from_ai.endswith("元"):
-                                    valuation_from_ai = valuation_from_ai[:-1]
-                                logger.info(f"提取到估价：{valuation_from_ai}")
-                            elif line.startswith("特点评估："):
-                                current_section = "features"
-                                logger.info(f"切换到section：{current_section}")
-                            elif line.startswith("吉凶评估："):
-                                current_section = "jixiong"
-                                logger.info(f"切换到section：{current_section}")
-                            elif line.startswith("总评估："):
-                                current_section = "total"
-                                logger.info(f"切换到section：{current_section}")
-                            else:
-                                if current_section == "features":
-                                    analysis_features += line + "\n"
-                                    logger.info(f"添加到features：{line}")
-                                elif current_section == "jixiong":
-                                    analysis_jixiong += line + "\n"
-                                    logger.info(f"添加到jixiong：{line}")
-                                elif current_section == "total":
-                                    analysis_total += line + "\n"
-                                    logger.info(f"添加到total：{line}")
-                        
-                        # 去除多余换行
-                        analysis_features = analysis_features.strip()
-                        analysis_jixiong = analysis_jixiong.strip()
-                        analysis_total = analysis_total.strip()
-                    else:
-                        # 如果AI返回的内容不包含预期的格式分隔符，则将整个内容作为总评估
-                        logger.info("AI返回的内容不包含预期的格式分隔符，将整个内容作为总评估")
-                        # 尝试从内容中提取估价
-                        if "估价：" in ai_analysis:
-                            valuation_part = ai_analysis.split("估价：")[1].split("\n")[0].strip()
-                            if valuation_part:
-                                valuation_from_ai = valuation_part.replace("元", "").strip()
-                                logger.info(f"提取到估价：{valuation_from_ai}")
-                        # 将整个内容作为总评估
-                        analysis_total = ai_analysis
-                        # 设置默认的特点评估和吉凶评估
-                        analysis_features = "AI综合评估了QQ号码的特点"
-                        analysis_jixiong = "AI分析了QQ号码的吉凶情况"
+                        if line.startswith("估价："):
+                            valuation_from_ai = line.replace("估价：", "").strip()
+                            # 移除可能包含的"元"字，避免重复显示
+                            if valuation_from_ai.endswith("元"):
+                                valuation_from_ai = valuation_from_ai[:-1]
+                        elif line.startswith("特点评估："):
+                            current_section = "features"
+                        elif line.startswith("吉凶评估："):
+                            current_section = "jixiong"
+                        elif line.startswith("总评估："):
+                            current_section = "total"
+                        else:
+                            if current_section == "features":
+                                analysis_features += line + "\n"
+                            elif current_section == "jixiong":
+                                analysis_jixiong += line + "\n"
+                            elif current_section == "total":
+                                analysis_total += line + "\n"
                     
-                    logger.info(f"解析完成 - features：'{analysis_features}'，jixiong：'{analysis_jixiong}'，total：'{analysis_total}'")
+                    # 去除多余换行
+                    analysis_features = analysis_features.strip()
+                    analysis_jixiong = analysis_jixiong.strip()
+                    analysis_total = analysis_total.strip()
                     
                     # 设置默认值（仅当内容为空时）
                     if not analysis_features:
-                        logger.info("features为空，使用默认值")
                         analysis_features = "根据QQ号码特点进行了综合评估"
                     if not analysis_jixiong:
-                        logger.info("jixiong为空，使用默认值")
                         analysis_jixiong = "根据81数理进行了吉凶分析"
                     if not analysis_total:
-                        logger.info("total为空，使用默认值")
                         analysis_total = "综合考虑各项因素给出了最终估价"
                 except Exception as parse_e:
                     logger.error(f"解析AI分析结果时发生错误：{parse_e}")
-                    # 解析失败时，将AI原始返回结果直接显示，而不是使用默认值
-                    analysis_features = f"AI原始返回：{ai_analysis}"
-                    analysis_jixiong = ""
-                    analysis_total = ""
+                    # 解析失败时使用默认值
+                    analysis_features = "AI分析结果解析失败"
+                    analysis_jixiong = "AI分析结果解析失败"
+                    analysis_total = "AI分析结果解析失败"
                 
                 # 5. 获取当前时间，用于显示在图片中
                 current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
@@ -3502,142 +3552,6 @@ class Main(Star):
             yield message.plain_result(f"请求历史上的今天时发生错误：{str(e)}").use_t2i(False)
             return
     
-    @filter.command("万年历")
-    async def wannianli(self, message: AstrMessageEvent):
-        """获取万年历和黄历信息，生成图片返回"""
-        try:
-            timeout = aiohttp.ClientTimeout(total=30)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                # 1. 调用万年历API
-                wannianli_api = "https://api.52vmy.cn/api/wl/wnl"
-                async with session.get(wannianli_api) as wannianli_resp:
-                    if wannianli_resp.status != 200:
-                        yield message.plain_result("获取万年历数据失败，服务器返回错误状态码").use_t2i(False)
-                        return
-                    
-                    # 检查响应类型，增加容错机制
-                    content_type = wannianli_resp.headers.get('Content-Type', '')
-                    wannianli_data = {}
-                    
-                    if 'application/json' in content_type or 'text/json' in content_type:
-                        # 如果是JSON格式，直接解析
-                        wannianli_data = await wannianli_resp.json()
-                    else:
-                        # 如果不是JSON格式，尝试读取文本并手动解析
-                        try:
-                            response_text = await wannianli_resp.text()
-                            # 尝试解析JSON字符串
-                            wannianli_data = json.loads(response_text)
-                        except json.JSONDecodeError:
-                            # 如果解析失败，返回错误信息
-                            logger.error(f"万年历API返回非JSON格式数据：{response_text}")
-                            yield message.plain_result("获取万年历数据失败，服务器返回格式错误").use_t2i(False)
-                            return
-                
-                # 2. 调用黄历API
-                huangli_api = "https://api.52vmy.cn/api/wl/wnl/huangli"
-                async with session.get(huangli_api) as huangli_resp:
-                    if huangli_resp.status != 200:
-                        yield message.plain_result("获取黄历数据失败，服务器返回错误状态码").use_t2i(False)
-                        return
-                    
-                    # 检查响应类型，增加容错机制
-                    content_type = huangli_resp.headers.get('Content-Type', '')
-                    huangli_result = {}
-                    huangli_data = {}
-                    
-                    if 'application/json' in content_type or 'text/json' in content_type:
-                        # 如果是JSON格式，直接解析
-                        huangli_result = await huangli_resp.json()
-                        huangli_data = huangli_result.get("data", {})
-                    else:
-                        # 如果不是JSON格式，尝试读取文本并手动解析
-                        try:
-                            response_text = await huangli_resp.text()
-                            # 尝试解析JSON字符串
-                            huangli_result = json.loads(response_text)
-                            huangli_data = huangli_result.get("data", {})
-                        except json.JSONDecodeError:
-                            # 如果解析失败，使用空数据继续执行，不影响主功能
-                            logger.warning(f"黄历API返回非JSON格式数据：{response_text}")
-                            # 使用默认空数据
-                            huangli_data = {
-                                "info": []
-                            }
-                
-                # 3. 准备数据
-                # 万年历数据
-                solar_date = f"{wannianli_data.get('year', '')}年{wannianli_data.get('month', '')}月{wannianli_data.get('day', '')}日"
-                solar_date_full = solar_date
-                lunar_date = f"农历{wannianli_data.get('lunarMonth', '')}月{wannianli_data.get('lunarDate', '')}"
-                lunar_date_full = f"{wannianli_data.get('lunarYear', '')}年{wannianli_data.get('lunarMonth', '')}月{wannianli_data.get('lunarDate', '')}日"
-                weekday = wannianli_data.get('cnDay', '')
-                animal = wannianli_data.get('animal', '')
-                festival = wannianli_data.get('festivalList', '')
-                gz_year = wannianli_data.get('gzYear', '')
-                gz_month = wannianli_data.get('gzMonth', '')
-                gz_date = wannianli_data.get('gzDate', '')
-                term = wannianli_data.get('term', '')
-                suit = wannianli_data.get('suit', '无')
-                avoid = wannianli_data.get('avoid', '无')
-                
-                # 黄历数据
-                huangli_info_list = huangli_data.get('info', [])
-                huangli_html = ""
-                for item in huangli_info_list:
-                    name = item.get('name', '')
-                    index = item.get('index', '')
-                    huangli_html += f'<div class="huangli-info-item"><div class="huangli-info-name">{name}</div><div class="huangli-info-value">{index}</div></div>'
-                
-                # 4. 获取当前时间
-                current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-                
-                # 5. 渲染HTML模板
-                template_data = {
-                    "solar_date": solar_date,
-                    "solar_date_full": solar_date_full,
-                    "lunar_date": lunar_date,
-                    "lunar_date_full": lunar_date_full,
-                    "weekday": weekday,
-                    "animal": animal,
-                    "festival": festival,
-                    "gz_year": gz_year,
-                    "gz_month": gz_month,
-                    "gz_date": gz_date,
-                    "term": term,
-                    "suit": suit,
-                    "avoid": avoid,
-                    "huangli_info": huangli_html,
-                    "current_time": current_time
-                }
-                
-                html_content = self.WANNIANLI_TEMPLATE
-                for key, value in template_data.items():
-                    placeholder = "{{" + key + "}}"
-                    html_content = html_content.replace(placeholder, str(value))
-                
-                # 6. 使用html_render函数生成图片
-                options = {
-                    "full_page": True,
-                    "type": "jpeg",
-                    "quality": 95,
-                }
-                
-                image_url = await self.html_render(
-                    html_content,  # 渲染后的HTML内容
-                    {},  # 空数据字典
-                    True,  # 返回URL
-                    options  # 图片生成选项
-                )
-                
-                # 7. 发送图片结果
-                yield message.image_result(image_url).use_t2i(False)
-                return
-        except Exception as e:
-            logger.error(f"万年历生成失败：{e}")
-            yield message.plain_result(f"万年历生成失败：{str(e)}").use_t2i(False)
-            return
-    
     @filter.command("图文合成")
     async def image_text_synthesis(self, message: AstrMessageEvent):
         """图文合成功能，将文字转换为图片，包含内容安全审核"""
@@ -3721,6 +3635,102 @@ class Main(Star):
             logger.error(f"请求图文合同时发生错误：{e}")
             yield message.plain_result(f"请求图文合同时发生错误：{str(e)}").use_t2i(False)
             return
+    
+    @filter.command("万年历")
+    async def calendar(self, message: AstrMessageEvent):
+        """万年历和黄历结合查询功能"""
+        try:
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                # 1. 获取万年历数据
+                wnl_api = "https://api.52vmy.cn/api/wl/wnl"
+                async with session.get(wnl_api) as wnl_resp:
+                    if wnl_resp.status != 200:
+                        yield message.plain_result(f"请求万年历数据失败，服务器返回错误状态码 {wnl_resp.status}").use_t2i(False)
+                        return
+                    wnl_data = await wnl_resp.json()
+                
+                # 2. 获取黄历数据
+                hl_api = "https://api.52vmy.cn/api/wl/wnl/huangli"
+                async with session.get(hl_api) as hl_resp:
+                    if hl_resp.status != 200:
+                        yield message.plain_result(f"请求黄历数据失败，服务器返回错误状态码 {hl_resp.status}").use_t2i(False)
+                        return
+                    hl_data = await hl_resp.json()
+                
+                # 3. 检查API返回数据完整性
+                if not wnl_data:
+                    yield message.plain_result("万年历数据获取失败，请稍后重试").use_t2i(False)
+                    return
+                if hl_data.get("code") != 200 or not hl_data.get("data"):
+                    yield message.plain_result("黄历数据获取失败，请稍后重试").use_t2i(False)
+                    return
+                
+                # 4. 准备模板数据
+                current_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                
+                template_data = {
+                    "year": wnl_data.get("year", ""),
+                    "month": wnl_data.get("month", ""),
+                    "day": wnl_data.get("day", ""),
+                    "cnDay": wnl_data.get("cnDay", ""),
+                    "animal": wnl_data.get("animal", ""),
+                    "lunarYear": wnl_data.get("lunarYear", ""),
+                    "lMonth": wnl_data.get("lMonth", "") + "月",
+                    "lDate": wnl_data.get("lDate", ""),
+                    "gzYear": wnl_data.get("gzYear", ""),
+                    "gzMonth": wnl_data.get("gzMonth", ""),
+                    "gzDate": wnl_data.get("gzDate", ""),
+                    "lunarMonth": wnl_data.get("lunarMonth", ""),
+                    "lunarDate": wnl_data.get("lunarDate", ""),
+                    "term": wnl_data.get("term", ""),
+                    "suit": wnl_data.get("suit", ""),
+                    "avoid": wnl_data.get("avoid", ""),
+                    "festival": wnl_data.get("value", wnl_data.get("festivalList", "")),
+                    "huangli_info": hl_data.get("data", {}).get("info", []),
+                    "current_time": current_time
+                }
+                
+                # 5. 渲染HTML模板
+                html_content = self.CALENDAR_TEMPLATE
+                for key, value in template_data.items():
+                    placeholder = "{{" + key + "}}"
+                    html_content = html_content.replace(placeholder, str(value))
+                
+                # 6. 使用html_render函数生成图片
+                options = {
+                    "full_page": True,
+                    "type": "jpeg",
+                    "quality": 95,
+                }
+                
+                image_url = await self.html_render(
+                    html_content,  # 渲染后的HTML内容
+                    {},  # 空数据字典
+                    True,  # 返回URL
+                    options  # 图片生成选项
+                )
+                
+                # 7. 返回图片结果
+                yield message.image_result(image_url).use_t2i(False)
+                return
+                    
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result(f"网络连接错误：{str(e)}").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求万年历时发生错误：{e}")
+            yield message.plain_result(f"请求万年历时发生错误：{str(e)}").use_t2i(False)
+            return
 
     @filter.command("加密")
     async def shouyu_encrypt(self, message: AstrMessageEvent):
@@ -3791,6 +3801,124 @@ class Main(Star):
         except Exception as e:
             logger.error(f"请求加密时发生错误：{e}")
             yield message.plain_result(f"请求加密时发生错误：{str(e)}").use_t2i(False)
+            return
+    
+    @filter.command("万年历")
+    async def calendar(self, message: AstrMessageEvent):
+        """万年历和黄历结合查询功能"""
+        try:
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                # 1. 获取万年历数据
+                calendar_api = "https://api.52vmy.cn/api/wl/wnl"
+                async with session.get(calendar_api) as calendar_resp:
+                    if calendar_resp.status != 200:
+                        yield message.plain_result("获取万年历数据失败，服务器返回错误状态码").use_t2i(False)
+                        return
+                    calendar_result = await calendar_resp.json()
+                
+                # 2. 获取黄历数据
+                huangli_api = "https://api.52vmy.cn/api/wl/wnl/huangli"
+                async with session.get(huangli_api) as huangli_resp:
+                    if huangli_resp.status != 200:
+                        yield message.plain_result("获取黄历数据失败，服务器返回错误状态码").use_t2i(False)
+                        return
+                    huangli_result = await huangli_resp.json()
+                
+                # 3. 处理数据
+                # 万年历数据
+                animal = calendar_result.get("animal", "")
+                avoid = calendar_result.get("avoid", "")
+                cnDay = calendar_result.get("cnDay", "")
+                day = calendar_result.get("day", "")
+                festivalList = calendar_result.get("festivalList", "")
+                gzDate = calendar_result.get("gzDate", "")
+                gzMonth = calendar_result.get("gzMonth", "")
+                gzYear = calendar_result.get("gzYear", "")
+                lDate = calendar_result.get("lDate", "")
+                lMonth = calendar_result.get("lMonth", "")
+                lunarDate = calendar_result.get("lunarDate", "")
+                lunarMonth = calendar_result.get("lunarMonth", "")
+                lunarYear = calendar_result.get("lunarYear", "")
+                month = calendar_result.get("month", "")
+                suit = calendar_result.get("suit", "")
+                term = calendar_result.get("term", "")
+                year = calendar_result.get("year", "")
+                
+                # 黄历数据
+                huangli_info = []
+                if huangli_result.get("code") == 200:
+                    huangli_data = huangli_result.get("data", {})
+                    huangli_info = huangli_data.get("info", [])
+                
+                # 4. 准备模板数据
+                template_data = {
+                    "animal": animal,
+                    "avoid": avoid,
+                    "cnDay": cnDay,
+                    "day": day,
+                    "festival": festivalList,
+                    "gzDate": gzDate,
+                    "gzMonth": gzMonth,
+                    "gzYear": gzYear,
+                    "lDate": lDate,
+                    "lMonth": lMonth,
+                    "lunarDate": lunarDate,
+                    "lunarMonth": lunarMonth,
+                    "lunarYear": lunarYear,
+                    "month": month,
+                    "suit": suit,
+                    "term": term,
+                    "year": year,
+                    "huangli_info": huangli_info,
+                    "current_time": datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                }
+                
+                # 5. 生成HTML
+                html_content = self.CALENDAR_TEMPLATE
+                for key, value in template_data.items():
+                    html_content = html_content.replace(f"{{{{{key}}}}}", str(value))
+                
+                # 6. 生成图片
+                img_api_url = "https://api.apifox.cn/api/v1/browser/screenshot"
+                img_payload = {
+                    "html": html_content,
+                    "width": 800,
+                    "height": 1200,
+                    "deviceScaleFactor": 2,
+                    "isMobile": False
+                }
+                
+                async with session.post(img_api_url, json=img_payload) as img_resp:
+                    if img_resp.status != 200:
+                        yield message.plain_result("生成图片失败，服务器返回错误状态码").use_t2i(False)
+                        return
+                    img_data = await img_resp.json()
+                    if img_data.get("code") != 0:
+                        yield message.plain_result(f"生成图片失败：{img_data.get('message', '未知错误')}").use_t2i(False)
+                        return
+                    img_url = img_data.get("data", {}).get("url", "")
+                    if not img_url:
+                        yield message.plain_result("生成图片失败，未获取到图片URL").use_t2i(False)
+                        return
+                
+                # 7. 返回图片结果
+                yield message.image_result(img_url)
+        except aiohttp.ClientError as e:
+            logger.error(f"网络连接错误：{e}")
+            yield message.plain_result(f"无法连接到服务器：{str(e)}").use_t2i(False)
+            return
+        except asyncio.TimeoutError:
+            logger.error("请求超时")
+            yield message.plain_result("请求超时，请稍后重试").use_t2i(False)
+            return
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析错误：{e}")
+            yield message.plain_result(f"服务器返回数据格式错误：{str(e)}").use_t2i(False)
+            return
+        except Exception as e:
+            logger.error(f"请求万年历时发生错误：{e}")
+            yield message.plain_result(f"请求万年历时发生错误：{str(e)}").use_t2i(False)
             return
     
     @filter.command("解密")
